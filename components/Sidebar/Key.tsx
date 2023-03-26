@@ -38,6 +38,7 @@ export const Key = () => {
         value={newKey}
         onChange={(e) => setNewKey(e.target.value)}
         onKeyDown={handleEnterDown}
+        placeholder={t('API Key') || 'API Key'}
       />
 
       <div className="flex w-[40px]">

@@ -122,6 +122,17 @@ export const Chat: FC<Props> = ({
               'Please set your OpenAI API key in the bottom left of the sidebar.',
             )}
           </div>
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            {t("If you don't have an OpenAI API key, you can get one here: ")}
+            <a
+              href="https://platform.openai.com/account/api-keys"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              openai.com
+            </a>
+          </div>
         </div>
       ) : modelError ? (
         <ErrorMessageDiv error={modelError} />
