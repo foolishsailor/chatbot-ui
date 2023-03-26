@@ -9,17 +9,17 @@ import {
   KeyValuePair,
   Message,
   OpenAIModelID,
-  OpenAIModels
+  OpenAIModels,
 } from '@/types';
 import {
   cleanConversationHistory,
-  cleanSelectedConversation
+  cleanSelectedConversation,
 } from '@/utils/app/clean';
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const';
 import {
   saveConversation,
   saveConversations,
-  updateConversation
+  updateConversation,
 } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
@@ -31,6 +31,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 
 import { HomeInitialState, initialState } from './home.state';
+import HomeContext from './home.context';
 import { useCreateReducer } from '@/hooks';
 
 interface HomeProps {
@@ -41,7 +42,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
   const { t } = useTranslation('chat');
 
   const contextValue = useCreateReducer<HomeInitialState>({
-    initialState
+    initialState,
   });
 
   const {
@@ -57,9 +58,9 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       apiKey,
       messageError,
       modelError,
-      currentMessage
+      currentMessage,
     },
-    dispatch
+    dispatch,
   } = contextValue;
 
   const stopConversationRef = useRef<boolean>(false);
@@ -76,19 +77,19 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
         updatedConversation = {
           ...selectedConversation,
-          messages: [...updatedMessages, message]
+          messages: [...updatedMessages, message],
         };
       } else {
         updatedConversation = {
           ...selectedConversation,
-          messages: [...selectedConversation.messages, message]
+          messages: [...selectedConversation.messages, message],
         };
       }
 
       dispatch({
         type: 'change',
         field: 'selectedConversation',
-        value: updatedConversation
+        value: updatedConversation,
       });
       dispatch({ type: 'change', field: 'loading', value: true });
       dispatch({ type: 'change', field: 'messageIsStreaming', value: true });
@@ -98,17 +99,17 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
         model: updatedConversation.model,
         messages: updatedConversation.messages,
         key: apiKey,
-        prompt: updatedConversation.prompt
+        prompt: updatedConversation.prompt,
       };
 
       const controller = new AbortController();
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         signal: controller.signal,
-        body: JSON.stringify(chatBody)
+        body: JSON.stringify(chatBody),
       });
 
       if (!response.ok) {
@@ -136,7 +137,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
         updatedConversation = {
           ...updatedConversation,
-          name: customName
+          name: customName,
         };
       }
 
@@ -163,18 +164,18 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
           isFirst = false;
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
-            { role: 'assistant', content: chunkValue }
+            { role: 'assistant', content: chunkValue },
           ];
 
           updatedConversation = {
             ...updatedConversation,
-            messages: updatedMessages
+            messages: updatedMessages,
           };
 
           dispatch({
             type: 'change',
             field: 'selectedConversation',
-            value: updatedConversation
+            value: updatedConversation,
           });
         } else {
           const updatedMessages: Message[] = updatedConversation.messages.map(
@@ -182,23 +183,23 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
               if (index === updatedConversation.messages.length - 1) {
                 return {
                   ...message,
-                  content: text
+                  content: text,
                 };
               }
 
               return message;
-            }
+            },
           );
 
           updatedConversation = {
             ...updatedConversation,
-            messages: updatedMessages
+            messages: updatedMessages,
           };
 
           dispatch({
             type: 'change',
             field: 'selectedConversation',
-            value: updatedConversation
+            value: updatedConversation,
           });
         }
       }
@@ -212,7 +213,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
           }
 
           return conversation;
-        }
+        },
       );
 
       if (updatedConversations.length === 0) {
@@ -222,7 +223,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       dispatch({
         type: 'change',
         field: 'conversations',
-        value: updatedConversations
+        value: updatedConversations,
       });
 
       saveConversations(updatedConversations);
@@ -237,20 +238,20 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       code: null,
       messageLines: [
         t(
-          'Make sure your OpenAI API key is set in the bottom left of the sidebar.'
+          'Make sure your OpenAI API key is set in the bottom left of the sidebar.',
         ),
-        t('If you completed this step, OpenAI may be experiencing issues.')
-      ]
+        t('If you completed this step, OpenAI may be experiencing issues.'),
+      ],
     } as ErrorMessage;
 
     const response = await fetch('/api/models', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        key
-      })
+        key,
+      }),
     });
 
     if (!response.ok) {
@@ -258,7 +259,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
         const data = await response.json();
         Object.assign(error, {
           code: data.error?.code,
-          messageLines: [data.error?.message]
+          messageLines: [data.error?.message],
         });
       } catch (e) {}
 
@@ -290,7 +291,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
     localStorage.setItem('apiKey', apiKey);
   };
 
-  const handleExportData = () => {
+  const handleExportConversations = () => {
     exportData();
   };
 
@@ -303,12 +304,12 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
     dispatch({
       type: 'change',
       field: 'conversations',
-      value: data.conversations
+      value: data.conversations,
     });
     dispatch({
       type: 'change',
       field: 'selectedConversation',
-      value: data.conversations[data.conversations.length - 1]
+      value: data.conversations[data.conversations.length - 1],
     });
     dispatch({ type: 'change', field: 'folders', value: data.folders });
   };
@@ -317,7 +318,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
     dispatch({
       type: 'change',
       field: 'selectedConversation',
-      value: conversation
+      value: conversation,
     });
 
     saveConversation(conversation);
@@ -328,7 +329,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
     const newFolder: ChatFolder = {
       id: lastFolder ? lastFolder.id + 1 : 1,
-      name
+      name,
     };
 
     const updatedFolders = [...folders, newFolder];
@@ -347,7 +348,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       if (c.folderId === folderId) {
         return {
           ...c,
-          folderId: 0
+          folderId: 0,
         };
       }
 
@@ -357,7 +358,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
     dispatch({
       type: 'change',
       field: 'conversations',
-      value: updatedConversations
+      value: updatedConversations,
     });
 
     saveConversations(updatedConversations);
@@ -368,7 +369,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       if (f.id === folderId) {
         return {
           ...f,
-          name
+          name,
         };
       }
 
@@ -391,7 +392,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       messages: [],
       model: OpenAIModels[OpenAIModelID.GPT_3_5],
       prompt: DEFAULT_SYSTEM_PROMPT,
-      folderId: 0
+      folderId: 0,
     };
 
     const updatedConversations = [...conversations, newConversation];
@@ -399,12 +400,12 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
     dispatch({
       type: 'change',
       field: 'conversations',
-      value: updatedConversations
+      value: updatedConversations,
     });
     dispatch({
       type: 'change',
       field: 'selectedConversation',
-      value: newConversation
+      value: newConversation,
     });
 
     saveConversation(newConversation);
@@ -415,13 +416,13 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
   const handleDeleteConversation = (conversation: Conversation) => {
     const updatedConversations = conversations.filter(
-      (c) => c.id !== conversation.id
+      (c) => c.id !== conversation.id,
     );
 
     dispatch({
       type: 'change',
       field: 'conversations',
-      value: updatedConversations
+      value: updatedConversations,
     });
 
     saveConversations(updatedConversations);
@@ -430,7 +431,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       dispatch({
         type: 'change',
         field: 'selectedConversation',
-        value: updatedConversations[updatedConversations.length - 1]
+        value: updatedConversations[updatedConversations.length - 1],
       });
       saveConversation(updatedConversations[updatedConversations.length - 1]);
     } else {
@@ -443,8 +444,8 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
           messages: [],
           model: OpenAIModels[OpenAIModelID.GPT_3_5],
           prompt: DEFAULT_SYSTEM_PROMPT,
-          folderId: 0
-        }
+          folderId: 0,
+        },
       });
 
       localStorage.removeItem('selectedConversation');
@@ -453,16 +454,16 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
   const handleUpdateConversation = (
     conversation: Conversation,
-    data: KeyValuePair
+    data: KeyValuePair,
   ) => {
     const updatedConversation = {
       ...conversation,
-      [data.key]: data.value
+      [data.key]: data.value,
     };
 
     const { single, all } = updateConversation(
       updatedConversation,
-      conversations
+      conversations,
     );
 
     dispatch({ type: 'change', field: 'conversations', value: all });
@@ -482,8 +483,8 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
         messages: [],
         model: OpenAIModels[OpenAIModelID.GPT_3_5],
         prompt: DEFAULT_SYSTEM_PROMPT,
-        folderId: 0
-      }
+        folderId: 0,
+      },
     });
 
     localStorage.removeItem('selectedConversation');
@@ -505,19 +506,19 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
 
       const updatedConversation = {
         ...selectedConversation,
-        messages: updatedMessages
+        messages: updatedMessages,
       };
 
       const { single, all } = updateConversation(
         updatedConversation,
-        conversations
+        conversations,
       );
 
       dispatch({ type: 'change', field: 'conversations', value: all });
       dispatch({
         type: 'change',
         field: 'selectedConversation',
-        value: single
+        value: single,
       });
       dispatch({ type: 'change', field: 'currentMessage', value: message });
     }
@@ -548,7 +549,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       dispatch({
         type: 'change',
         field: 'lightMode',
-        value: theme as 'dark' | 'light'
+        value: theme as 'dark' | 'light',
       });
     }
 
@@ -570,7 +571,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       dispatch({
         type: 'change',
         field: 'folders',
-        value: JSON.parse(folders)
+        value: JSON.parse(folders),
       });
     }
 
@@ -579,13 +580,13 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       const parsedConversationHistory: Conversation[] =
         JSON.parse(conversationHistory);
       const cleanedConversationHistory = cleanConversationHistory(
-        parsedConversationHistory
+        parsedConversationHistory,
       );
 
       dispatch({
         type: 'change',
         field: 'conversations',
-        value: cleanedConversationHistory
+        value: cleanedConversationHistory,
       });
     }
 
@@ -594,13 +595,13 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       const parsedSelectedConversation: Conversation =
         JSON.parse(selectedConversation);
       const cleanedSelectedConversation = cleanSelectedConversation(
-        parsedSelectedConversation
+        parsedSelectedConversation,
       );
 
       dispatch({
         type: 'change',
         field: 'selectedConversation',
-        value: cleanedSelectedConversation
+        value: cleanedSelectedConversation,
       });
     } else {
       dispatch({
@@ -612,14 +613,30 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
           messages: [],
           model: OpenAIModels[OpenAIModelID.GPT_3_5],
           prompt: DEFAULT_SYSTEM_PROMPT,
-          folderId: 0
-        }
+          folderId: 0,
+        },
       });
     }
   }, [serverSideApiKeyIsSet]);
 
   return (
-    <>
+    <HomeContext.Provider
+      value={{
+        ...contextValue,
+        handleNewConversation,
+        handleLightMode,
+        handleCreateFolder,
+        handleDeleteFolder,
+        handleUpdateFolder,
+        handleSelectConversation,
+        handleDeleteConversation,
+        handleUpdateConversation,
+        handleApiKeyChange,
+        handleClearConversations,
+        handleExportConversations,
+        handleImportConversations,
+      }}
+    >
       <Head>
         <title>Chatbot UI</title>
         <meta name="description" content="ChatGPT but better." />
@@ -628,53 +645,32 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
       </Head>
       {selectedConversation && (
         <main
-          className={`flex flex-col h-screen w-screen text-white dark:text-white text-sm ${lightMode}`}
+          className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
         >
-          <div className="sm:hidden w-full fixed top-0">
-            <Navbar
-              selectedConversation={selectedConversation}
-              onNewConversation={handleNewConversation}
-            />
+          <div className="fixed top-0 w-full sm:hidden">
+            <Navbar />
           </div>
 
           <div className="flex h-full w-full pt-[48px] sm:pt-0">
             {showSidebar ? (
               <div>
                 <Sidebar
-                  loading={messageIsStreaming}
-                  conversations={conversations}
-                  lightMode={lightMode}
-                  selectedConversation={selectedConversation}
-                  apiKey={apiKey}
-                  folders={folders}
-                  onToggleLightMode={handleLightMode}
-                  onCreateFolder={handleCreateFolder}
-                  onDeleteFolder={handleDeleteFolder}
-                  onUpdateFolder={handleUpdateFolder}
-                  onNewConversation={handleNewConversation}
-                  onSelectConversation={handleSelectConversation}
-                  onDeleteConversation={handleDeleteConversation}
                   onToggleSidebar={() =>
                     dispatch({
                       type: 'change',
                       field: 'showSidebar',
-                      value: !showSidebar
+                      value: !showSidebar,
                     })
                   }
-                  onUpdateConversation={handleUpdateConversation}
-                  onApiKeyChange={handleApiKeyChange}
-                  onClearConversations={handleClearConversations}
-                  onExportConversations={handleExportData}
-                  onImportConversations={handleImportConversations}
                 />
 
                 <IconArrowBarLeft
-                  className="z-50 fixed top-5 left-[270px] sm:top-0.5 sm:left-[270px] sm:text-neutral-700 dark:text-white cursor-pointer hover:text-gray-400 dark:hover:text-gray-300 h-7 w-7 sm:h-8 sm:w-8"
+                  className="fixed top-5 left-[270px] z-50 h-7 w-7 cursor-pointer hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
                   onClick={() =>
                     dispatch({
                       type: 'change',
                       field: 'showSidebar',
-                      value: !showSidebar
+                      value: !showSidebar,
                     })
                   }
                 />
@@ -684,20 +680,20 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
                     dispatch({
                       type: 'change',
                       field: 'showSidebar',
-                      value: !showSidebar
+                      value: !showSidebar,
                     })
                   }
-                  className="sm:hidden bg-black opacity-70 z-10 absolute top-0 left-0 h-full w-full"
+                  className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
                 ></div>
               </div>
             ) : (
               <IconArrowBarRight
-                className="fixed text-white z-50 top-2.5 left-4 sm:top-0.5 sm:left-4 sm:text-neutral-700 dark:text-white cursor-pointer hover:text-gray-400 dark:hover:text-gray-300 h-7 w-7 sm:h-8 sm:w-8"
+                className="fixed top-2.5 left-4 z-50 h-7 w-7 cursor-pointer text-white hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8 sm:text-neutral-700"
                 onClick={() =>
                   dispatch({
                     type: 'change',
                     field: 'showSidebar',
-                    value: !showSidebar
+                    value: !showSidebar,
                   })
                 }
               />
@@ -712,7 +708,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
               messageError={messageError}
               models={models}
               loading={loading}
-                      onSend={handleSend}
+              onSend={handleSend}
               onUpdateConversation={handleUpdateConversation}
               onEditMessage={handleEditMessage}
               stopConversationRef={stopConversationRef}
@@ -720,7 +716,7 @@ const Home = ({ serverSideApiKeyIsSet }: HomeProps) => {
           </div>
         </main>
       )}
-    </>
+    </HomeContext.Provider>
   );
 };
 export default Home;
@@ -733,8 +729,8 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
         'common',
         'chat',
         'sidebar',
-        'markdown'
-      ]))
-    }
+        'markdown',
+      ])),
+    },
   };
 };

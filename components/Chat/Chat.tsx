@@ -12,6 +12,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useContext,
 } from 'react';
 import { useTranslation } from 'next-i18next';
 import { ChatInput } from './ChatInput';
@@ -20,17 +21,13 @@ import { ChatMessage } from './ChatMessage';
 import { ErrorMessageDiv } from './ErrorMessageDiv';
 import { ModelSelect } from './ModelSelect';
 import { SystemPrompt } from './SystemPrompt';
-import { IconSettings } from "@tabler/icons-react";
+import { IconSettings } from '@tabler/icons-react';
+
+import HomeContext from '@/pages/api/home/home.context';
 
 interface Props {
   conversation: Conversation;
-  models: OpenAIModel[];
-  apiKey: string;
   serverSideApiKeyIsSet: boolean;
-  messageIsStreaming: boolean;
-  modelError: ErrorMessage | null;
-  messageError: boolean;
-  loading: boolean;
   onSend: (message: Message, deleteCount?: number) => void;
   onUpdateConversation: (
     conversation: Conversation,
@@ -42,19 +39,27 @@ interface Props {
 
 export const Chat: FC<Props> = ({
   conversation,
-  models,
-  apiKey,
+
   serverSideApiKeyIsSet,
-  messageIsStreaming,
-  modelError,
-  messageError,
-  loading,
+
   onSend,
   onUpdateConversation,
   onEditMessage,
   stopConversationRef,
 }) => {
   const { t } = useTranslation('chat');
+
+  const {
+    state: {
+      apiKey,
+      loading,
+      modelError,
+      messageError,
+      messageIsStreaming,
+      models,
+    },
+  } = useContext(HomeContext);
+
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -131,7 +136,7 @@ export const Chat: FC<Props> = ({
                   </div>
 
                   {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 rounded border border-neutral-200 dark:border-neutral-600 p-4">
+                    <div className="flex h-full flex-col space-y-4 rounded border border-neutral-200 p-4 dark:border-neutral-600">
                       <ModelSelect
                         model={conversation.model}
                         models={models}
@@ -158,21 +163,30 @@ export const Chat: FC<Props> = ({
               </>
             ) : (
               <>
-              <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                {t('Model')}: {conversation.model.name}
-                <IconSettings className="ml-2 cursor-pointer hover:opacity-50" onClick={handleSettings} size={18} />
-              </div>
-              {showSettings && (
-                <div className="flex flex-col mx-auto pt-8 space-y-10 w-[200px] sm:w-[300px]">
-                  <div className="flex flex-col h-full space-y-4 border p-2 rounded border-neutral-500">
-                    <ModelSelect
-                          model={conversation.model}
-                          models={models}
-                          onModelChange={(model) => onUpdateConversation(conversation, { key: "model", value: model })}
-                        />
-                  </div>
+                <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                  {t('Model')}: {conversation.model.name}
+                  <IconSettings
+                    className="ml-2 cursor-pointer hover:opacity-50"
+                    onClick={handleSettings}
+                    size={18}
+                  />
                 </div>
-              )}
+                {showSettings && (
+                  <div className="mx-auto flex w-[200px] flex-col space-y-10 pt-8 sm:w-[300px]">
+                    <div className="flex h-full flex-col space-y-4 rounded border border-neutral-500 p-2">
+                      <ModelSelect
+                        model={conversation.model}
+                        models={models}
+                        onModelChange={(model) =>
+                          onUpdateConversation(conversation, {
+                            key: 'model',
+                            value: model,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {conversation.messages.map((message, index) => (
                   <ChatMessage

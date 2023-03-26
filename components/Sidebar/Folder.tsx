@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+import HomeContext from '@/pages/api/home/home.context';
+
 import { ChatFolder, Conversation, KeyValuePair } from '@/types';
 import {
   IconCaretDown,
@@ -7,39 +10,22 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
-import { FC, KeyboardEvent, useEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useState } from 'react';
 import { ConversationComponent } from './Conversation';
 
 interface Props {
-  searchTerm: string;
   conversations: Conversation[];
   currentFolder: ChatFolder;
-  onDeleteFolder: (folder: number) => void;
-  onUpdateFolder: (folder: number, name: string) => void;
-  // conversation props
-  selectedConversation: Conversation;
-  loading: boolean;
-  onSelectConversation: (conversation: Conversation) => void;
-  onDeleteConversation: (conversation: Conversation) => void;
-  onUpdateConversation: (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => void;
 }
 
-export const Folder: FC<Props> = ({
-  searchTerm,
-  conversations,
-  currentFolder,
-  onDeleteFolder,
-  onUpdateFolder,
-  // conversation props
-  selectedConversation,
-  loading,
-  onSelectConversation,
-  onDeleteConversation,
-  onUpdateConversation,
-}) => {
+export const Folder = ({ conversations, currentFolder }: Props) => {
+  const {
+    state: { searchTerm },
+    handleUpdateFolder,
+    handleDeleteFolder,
+    handleUpdateConversation,
+  } = useContext(HomeContext);
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -53,7 +39,7 @@ export const Folder: FC<Props> = ({
   };
 
   const handleRename = () => {
-    onUpdateFolder(currentFolder.id, renameValue);
+    handleUpdateFolder(currentFolder.id, renameValue);
     setRenameValue('');
     setIsRenaming(false);
   };
@@ -63,7 +49,10 @@ export const Folder: FC<Props> = ({
       setIsOpen(true);
 
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
-      onUpdateConversation(conversation, { key: 'folderId', value: folder.id });
+      handleUpdateConversation(conversation, {
+        key: 'folderId',
+        value: folder.id,
+      });
 
       e.target.style.background = 'none';
     }
@@ -133,7 +122,7 @@ export const Folder: FC<Props> = ({
                 e.stopPropagation();
 
                 if (isDeleting) {
-                  onDeleteFolder(currentFolder.id);
+                  handleDeleteFolder(currentFolder.id);
                 } else if (isRenaming) {
                   handleRename();
                 }
@@ -184,14 +173,7 @@ export const Folder: FC<Props> = ({
             if (conversation.folderId === currentFolder.id) {
               return (
                 <div key={index} className="ml-5 gap-2 border-l pl-2 pt-2">
-                  <ConversationComponent
-                    selectedConversation={selectedConversation}
-                    conversation={conversation}
-                    loading={loading}
-                    onSelectConversation={onSelectConversation}
-                    onDeleteConversation={onDeleteConversation}
-                    onUpdateConversation={onUpdateConversation}
-                  />
+                  <ConversationComponent conversation={conversation} />
                 </div>
               );
             }

@@ -1,15 +1,18 @@
+import { KeyboardEvent, useState, useContext } from 'react';
 import { IconCheck, IconKey, IconX } from '@tabler/icons-react';
-import { FC, KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { SidebarButton } from './SidebarButton';
 
-interface Props {
-  apiKey: string;
-  onApiKeyChange: (apiKey: string) => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const Key: FC<Props> = ({ apiKey, onApiKeyChange }) => {
+export const Key = () => {
   const { t } = useTranslation('sidebar');
+
+  const {
+    state: { apiKey },
+    handleApiKeyChange,
+  } = useContext(HomeContext);
+
   const [isChanging, setIsChanging] = useState(false);
   const [newKey, setNewKey] = useState(apiKey);
 
@@ -21,7 +24,7 @@ export const Key: FC<Props> = ({ apiKey, onApiKeyChange }) => {
   };
 
   const handleUpdateKey = (newKey: string) => {
-    onApiKeyChange(newKey.trim());
+    handleApiKeyChange(newKey.trim());
     setIsChanging(false);
   };
 

@@ -1,4 +1,6 @@
-import { Conversation, KeyValuePair } from '@/types';
+import HomeContext from '@/pages/api/home/home.context';
+
+import { Conversation } from '@/types';
 import {
   IconCheck,
   IconMessage,
@@ -6,28 +8,27 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
-import { DragEvent, FC, KeyboardEvent, useEffect, useState } from 'react';
+import {
+  DragEvent,
+  KeyboardEvent,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 interface Props {
-  selectedConversation: Conversation;
   conversation: Conversation;
-  loading: boolean;
-  onSelectConversation: (conversation: Conversation) => void;
-  onDeleteConversation: (conversation: Conversation) => void;
-  onUpdateConversation: (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => void;
 }
 
-export const ConversationComponent: FC<Props> = ({
-  selectedConversation,
-  conversation,
-  loading,
-  onSelectConversation,
-  onDeleteConversation,
-  onUpdateConversation,
-}) => {
+export const ConversationComponent = ({ conversation }: Props) => {
+  const {
+    state: { messageIsStreaming, selectedConversation },
+    dispatch,
+    handleSelectConversation,
+    handleDeleteConversation,
+    handleUpdateConversation,
+  } = useContext(HomeContext);
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -35,7 +36,7 @@ export const ConversationComponent: FC<Props> = ({
   const handleEnterDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleRename(selectedConversation);
+      if (selectedConversation) handleRename(selectedConversation);
     }
   };
 
@@ -49,7 +50,8 @@ export const ConversationComponent: FC<Props> = ({
   };
 
   const handleRename = (conversation: Conversation) => {
-    onUpdateConversation(conversation, { key: 'name', value: renameValue });
+    handleUpdateConversation(conversation, { key: 'name', value: renameValue });
+    dispatch({ type: 'change', field: 'searchTerm', value: '' });
     setRenameValue('');
     setIsRenaming(false);
   };
@@ -65,18 +67,18 @@ export const ConversationComponent: FC<Props> = ({
   return (
     <button
       className={`flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-[12.5px] leading-3 transition-colors duration-200 hover:bg-[#343541]/90 ${
-        loading ? 'disabled:cursor-not-allowed' : ''
+        messageIsStreaming ? 'disabled:cursor-not-allowed' : ''
       } ${
-        selectedConversation.id === conversation.id ? 'bg-[#343541]/90' : ''
+        selectedConversation?.id === conversation.id ? 'bg-[#343541]/90' : ''
       }`}
-      onClick={() => onSelectConversation(conversation)}
-      disabled={loading}
+      onClick={() => handleSelectConversation(conversation)}
+      disabled={messageIsStreaming}
       draggable="true"
       onDragStart={(e) => handleDragStart(e, conversation)}
     >
       <IconMessage size={18} />
 
-      {isRenaming && selectedConversation.id === conversation.id ? (
+      {isRenaming && selectedConversation?.id === conversation.id ? (
         <input
           className="flex-1 overflow-hidden overflow-ellipsis border-b border-neutral-400 bg-transparent pr-1 text-left text-white outline-none focus:border-neutral-100"
           type="text"
@@ -92,7 +94,7 @@ export const ConversationComponent: FC<Props> = ({
       )}
 
       {(isDeleting || isRenaming) &&
-        selectedConversation.id === conversation.id && (
+        selectedConversation?.id === conversation.id && (
           <div className="-ml-2 flex gap-1">
             <IconCheck
               className="min-w-[20px] text-neutral-400 hover:text-neutral-100"
@@ -101,7 +103,8 @@ export const ConversationComponent: FC<Props> = ({
                 e.stopPropagation();
 
                 if (isDeleting) {
-                  onDeleteConversation(conversation);
+                  handleDeleteConversation(conversation);
+                  dispatch({ type: 'change', field: 'searchTerm', value: '' });
                 } else if (isRenaming) {
                   handleRename(conversation);
                 }
@@ -123,7 +126,7 @@ export const ConversationComponent: FC<Props> = ({
           </div>
         )}
 
-      {selectedConversation.id === conversation.id &&
+      {selectedConversation?.id === conversation.id &&
         !isDeleting &&
         !isRenaming && (
           <div className="-ml-2 flex gap-1">

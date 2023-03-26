@@ -1,21 +1,16 @@
 import { IconCheck, IconTrash, IconX } from '@tabler/icons-react';
-import { FC, useState } from 'react';
+import { useState, useContext } from 'react';
 import { useTranslation } from 'next-i18next';
 import { SidebarButton } from './SidebarButton';
 
-interface Props {
-  onClearConversations: () => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const ClearConversations: FC<Props> = ({ onClearConversations }) => {
+export const ClearConversations = () => {
+  const { handleClearConversations } = useContext(HomeContext);
+
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
 
   const { t } = useTranslation('sidebar');
-
-  const handleClearConversations = () => {
-    onClearConversations();
-    setIsConfirming(false);
-  };
 
   return isConfirming ? (
     <div className="flex w-full cursor-pointer items-center rounded-md py-3 px-3 hover:bg-[#343541]">
@@ -27,11 +22,12 @@ export const ClearConversations: FC<Props> = ({ onClearConversations }) => {
 
       <div className="flex w-[40px]">
         <IconCheck
-          className="ml-auto min-w-[20px] mr-1 text-neutral-400 hover:text-neutral-100"
+          className="ml-auto mr-1 min-w-[20px] text-neutral-400 hover:text-neutral-100"
           size={18}
           onClick={(e) => {
             e.stopPropagation();
             handleClearConversations();
+            setIsConfirming(false);
           }}
         />
 

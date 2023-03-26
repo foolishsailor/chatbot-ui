@@ -2,18 +2,16 @@ import { ChatFolder, Conversation } from '@/types';
 import { cleanConversationHistory } from '@/utils/app/clean';
 import { IconFileImport } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
-import { FC } from 'react';
+import { useContext } from 'react';
 import { SidebarButton } from './SidebarButton';
 
-interface Props {
-  onImport: (data: {
-    conversations: Conversation[];
-    folders: ChatFolder[];
-  }) => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const Import: FC<Props> = ({ onImport }) => {
+export const Import = () => {
   const { t } = useTranslation('sidebar');
+
+  const { handleImportConversations } = useContext(HomeContext);
+
   return (
     <>
       <input
@@ -34,7 +32,10 @@ export const Import: FC<Props> = ({ onImport }) => {
               json = { history: cleanConversationHistory(json), folders: [] };
             }
 
-            onImport({ conversations: json.history, folders: json.folders });
+            handleImportConversations({
+              conversations: json.history,
+              folders: json.folders,
+            });
           };
           reader.readAsText(file);
         }}

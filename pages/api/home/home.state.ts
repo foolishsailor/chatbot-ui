@@ -3,7 +3,7 @@ import {
   Conversation,
   ErrorMessage,
   Message,
-  OpenAIModel
+  OpenAIModel,
 } from '@/types';
 
 export interface HomeInitialState {
@@ -16,9 +16,10 @@ export interface HomeInitialState {
   messageIsStreaming: boolean;
   showSidebar: boolean;
   apiKey: string;
-  messageError: boolean
+  messageError: boolean;
   modelError: ErrorMessage | null;
   currentMessage: Message | undefined;
+  searchTerm: string;
 }
 
 export const initialState: HomeInitialState = {
@@ -33,5 +34,6 @@ export const initialState: HomeInitialState = {
   apiKey: '',
   messageError: false,
   modelError: null,
-  currentMessage: undefined
+  currentMessage: undefined,
+  searchTerm: '',
 };
