@@ -1,15 +1,16 @@
 import { SupportedExportFormats } from '@/types/export';
 import { IconFileImport } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
-import { FC } from 'react';
+import { useContext } from 'react';
 import { SidebarButton } from '../Sidebar/SidebarButton';
 
-interface Props {
-  onImport: (data: SupportedExportFormats) => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const Import: FC<Props> = ({ onImport }) => {
+export const Import = () => {
   const { t } = useTranslation('sidebar');
+
+  const { handleImportConversations } = useContext(HomeContext);
+
   return (
     <>
       <input
@@ -25,7 +26,7 @@ export const Import: FC<Props> = ({ onImport }) => {
           const reader = new FileReader();
           reader.onload = (e) => {
             let json = JSON.parse(e.target?.result as string);
-            onImport(json);
+            handleImportConversations(json);
           };
           reader.readAsText(file);
         }}

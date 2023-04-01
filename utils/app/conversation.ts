@@ -15,6 +15,8 @@ export const updateConversation = (
   saveConversation(updatedConversation);
   saveConversations(updatedConversations);
 
+  console.log('updatedConversations', updatedConversations);
+  console.log('allConversations', allConversations);
   return {
     single: updatedConversation,
     all: updatedConversations,

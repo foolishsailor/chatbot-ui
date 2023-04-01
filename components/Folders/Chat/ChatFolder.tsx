@@ -9,39 +9,19 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
-import { FC, KeyboardEvent, useEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useState, useContext } from 'react';
 import { ConversationComponent } from '../../Chatbar/Conversation';
 
-interface Props {
-  searchTerm: string;
-  conversations: Conversation[];
-  currentFolder: Folder;
-  onDeleteFolder: (folder: string) => void;
-  onUpdateFolder: (folder: string, name: string) => void;
-  // conversation props
-  selectedConversation: Conversation;
-  loading: boolean;
-  onSelectConversation: (conversation: Conversation) => void;
-  onDeleteConversation: (conversation: Conversation) => void;
-  onUpdateConversation: (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const ChatFolder: FC<Props> = ({
-  searchTerm,
-  conversations,
-  currentFolder,
-  onDeleteFolder,
-  onUpdateFolder,
-  // conversation props
-  selectedConversation,
-  loading,
-  onSelectConversation,
-  onDeleteConversation,
-  onUpdateConversation,
-}) => {
+export const ChatFolder = () => {
+  const {
+    state: { searchTerm, conversations, currentFolder },
+    handleUpdateFolder,
+    handleUpdateConversation,
+    handleDeleteFolder,
+  } = useContext(HomeContext);
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -55,17 +35,20 @@ export const ChatFolder: FC<Props> = ({
   };
 
   const handleRename = () => {
-    onUpdateFolder(currentFolder.id, renameValue);
+    if (currentFolder) handleUpdateFolder(currentFolder.id, renameValue);
     setRenameValue('');
     setIsRenaming(false);
   };
 
-  const handleDrop = (e: any, folder: Folder) => {
-    if (e.dataTransfer) {
+  const handleDrop = (e: any, folder?: Folder) => {
+    if (e.dataTransfer && folder) {
       setIsOpen(true);
 
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
-      onUpdateConversation(conversation, { key: 'folderId', value: folder.id });
+      handleUpdateConversation(conversation, {
+        key: 'folderId',
+        value: folder.id,
+      });
 
       e.target.style.background = 'none';
     }
@@ -103,7 +86,7 @@ export const ChatFolder: FC<Props> = ({
     <>
       <div className="relative flex items-center">
         {isRenaming ? (
-          <div className="flex w-full items-center gap-3 bg-[#343541]/90 p-3 rounded-lg">
+          <div className="flex w-full items-center gap-3 rounded-lg bg-[#343541]/90 p-3">
             {isOpen ? (
               <IconCaretDown size={18} />
             ) : (
@@ -135,7 +118,7 @@ export const ChatFolder: FC<Props> = ({
             )}
 
             <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3">
-              {currentFolder.name}
+              {currentFolder?.name}
             </div>
           </button>
         )}
@@ -147,8 +130,8 @@ export const ChatFolder: FC<Props> = ({
               onClick={(e) => {
                 e.stopPropagation();
 
-                if (isDeleting) {
-                  onDeleteFolder(currentFolder.id);
+                if (isDeleting && currentFolder) {
+                  handleDeleteFolder(currentFolder.id);
                 } else if (isRenaming) {
                   handleRename();
                 }
@@ -179,7 +162,8 @@ export const ChatFolder: FC<Props> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 setIsRenaming(true);
-                setRenameValue(currentFolder.name);
+
+                if (currentFolder) setRenameValue(currentFolder.name);
               }}
             >
               <IconPencil size={18} />
@@ -199,21 +183,14 @@ export const ChatFolder: FC<Props> = ({
 
       {isOpen
         ? conversations.map((conversation, index) => {
-          if (conversation.folderId === currentFolder.id) {
-            return (
-              <div key={index} className="ml-5 gap-2 border-l pl-2">
-                <ConversationComponent
-                  selectedConversation={selectedConversation}
-                  conversation={conversation}
-                  loading={loading}
-                  onSelectConversation={onSelectConversation}
-                  onDeleteConversation={onDeleteConversation}
-                  onUpdateConversation={onUpdateConversation}
-                />
-              </div>
-            );
-          }
-        })
+            if (conversation.folderId === currentFolder?.id) {
+              return (
+                <div key={index} className="ml-5 gap-2 border-l pl-2">
+                  <ConversationComponent conversation={conversation} />
+                </div>
+              );
+            }
+          })
         : null}
     </>
   );

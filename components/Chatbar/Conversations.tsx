@@ -1,44 +1,52 @@
+import { useContext } from 'react';
 import { Conversation } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
-import { FC } from 'react';
 import { ConversationComponent } from './Conversation';
+import HomeContext from '@/pages/api/home/home.context';
 
 interface Props {
-  loading: boolean;
   conversations: Conversation[];
-  selectedConversation: Conversation;
-  onSelectConversation: (conversation: Conversation) => void;
-  onDeleteConversation: (conversation: Conversation) => void;
-  onUpdateConversation: (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => void;
 }
 
-export const Conversations: FC<Props> = ({
-  loading,
-  conversations,
-  selectedConversation,
-  onSelectConversation,
-  onDeleteConversation,
-  onUpdateConversation,
-}) => {
+const allowDrop = (e: any) => {
+  e.preventDefault();
+};
+
+const highlightDrop = (e: any) => {
+  e.target.style.background = '#343541';
+};
+
+const removeHighlight = (e: any) => {
+  e.target.style.background = 'none';
+};
+
+export const Conversations = ({ conversations }: Props) => {
+  const { handleUpdateConversation } = useContext(HomeContext);
+
+  const handleDrop = (e: any) => {
+    if (e.dataTransfer) {
+      const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
+      handleUpdateConversation(conversation, { key: 'folderId', value: 0 });
+
+      e.target.style.background = 'none';
+    }
+  };
+
   return (
-    <div className="flex w-full flex-col gap-1">
-      {conversations
-        .slice()
-        .reverse()
-        .map((conversation, index) => (
-          <ConversationComponent
-            key={index}
-            selectedConversation={selectedConversation}
-            conversation={conversation}
-            loading={loading}
-            onSelectConversation={onSelectConversation}
-            onDeleteConversation={onDeleteConversation}
-            onUpdateConversation={onUpdateConversation}
-          />
-        ))}
+    <div
+      className="h-full pt-2"
+      onDrop={(e) => handleDrop(e)}
+      onDragOver={allowDrop}
+      onDragEnter={highlightDrop}
+      onDragLeave={removeHighlight}
+    >
+      <div className="flex w-full flex-col gap-1">
+        {conversations
+          .slice()
+          .reverse()
+          .map((conversation, index) => (
+            <ConversationComponent key={index} conversation={conversation} />
+          ))}
+      </div>
     </div>
   );
 };

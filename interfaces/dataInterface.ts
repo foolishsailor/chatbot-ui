@@ -1,6 +1,6 @@
 //import local from './localDb';
 
-type DataType = 'local' | 'atlas' | 'squire' | 'plsql';
+type DataType = 'local' | 'atlas' | 'stich' | 'plsql';
 
 type DataServiceLiteral = {
   [key in DataType]: any;
@@ -9,7 +9,7 @@ type DataServiceLiteral = {
 const dataServiceLiteral: DataServiceLiteral = {
   local: 'local',
   atlas: 'atlas',
-  squire: 'squire',
+  stich: 'stich',
   plsql: 'plsql',
 };
 

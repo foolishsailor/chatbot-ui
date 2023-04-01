@@ -1,15 +1,18 @@
+import { KeyboardEvent, useState, useContext, useEffect, useRef } from 'react';
 import { IconCheck, IconKey, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
-import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { SidebarButton } from '../Sidebar/SidebarButton';
 
-interface Props {
-  apiKey: string;
-  onApiKeyChange: (apiKey: string) => void;
-}
+import HomeContext from '@/pages/api/home/home.context';
 
-export const Key: FC<Props> = ({ apiKey, onApiKeyChange }) => {
+export const Key = () => {
   const { t } = useTranslation('sidebar');
+
+  const {
+    state: { apiKey },
+    handleApiKeyChange,
+  } = useContext(HomeContext);
+
   const [isChanging, setIsChanging] = useState(false);
   const [newKey, setNewKey] = useState(apiKey);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,10 +25,10 @@ export const Key: FC<Props> = ({ apiKey, onApiKeyChange }) => {
   };
 
   const handleUpdateKey = (newKey: string) => {
-    onApiKeyChange(newKey.trim());
+    handleApiKeyChange(newKey.trim());
     setIsChanging(false);
   };
-  
+
   useEffect(() => {
     if (isChanging) {
       inputRef.current?.focus();
@@ -38,7 +41,7 @@ export const Key: FC<Props> = ({ apiKey, onApiKeyChange }) => {
 
       <input
         ref={inputRef}
-        className="ml-2 h-[20px] flex-1 overflow-hidden overflow-ellipsis border-b border-neutral-400 bg-transparent pr-1 text-[12.5px] leading-3 text-left text-white outline-none focus:border-neutral-100"
+        className="ml-2 h-[20px] flex-1 overflow-hidden overflow-ellipsis border-b border-neutral-400 bg-transparent pr-1 text-left text-[12.5px] leading-3 text-white outline-none focus:border-neutral-100"
         type="password"
         value={newKey}
         onChange={(e) => setNewKey(e.target.value)}
