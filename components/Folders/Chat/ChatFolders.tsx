@@ -11,11 +11,13 @@ export const Folders = () => {
     state: { folders },
   } = useContext(HomeContext);
 
-  return (
-    <div className="flex w-full flex-col pt-2">
-      {folders.map((folder, index) => (
-        <ChatFolder key={index} />
-      ))}
+  return folders.length > 0 ? (
+    <div className="flex border-b border-white/20 pb-2">
+      <div className="flex w-full flex-col pt-2">
+        {folders.map((folder, index) => (
+          <ChatFolder key={index} />
+        ))}
+      </div>
     </div>
-  );
+  ) : null;
 };
