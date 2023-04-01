@@ -328,6 +328,8 @@ const Home: React.FC<HomeProps> = ({
     setFolders(updatedFolders);
     saveFolders(updatedFolders);
 
+    console.log('conversations', conversations);
+
     const updatedConversations: Conversation[] = conversations.map((c) => {
       if (c.folderId === folderId) {
         return {
@@ -338,6 +340,9 @@ const Home: React.FC<HomeProps> = ({
 
       return c;
     });
+
+    console.log('updatedConversations', updatedConversations);
+
     setConversations(updatedConversations);
     saveConversations(updatedConversations);
 
