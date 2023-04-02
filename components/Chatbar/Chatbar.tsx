@@ -13,7 +13,6 @@ export const Chatbar = () => {
     >
       <ChatbarHeader />
       <ChatbarContent />
-      <div className="flex-grow overflow-auto"></div>
       <ChatbarSettings />
     </div>
   );
