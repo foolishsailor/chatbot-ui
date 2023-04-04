@@ -6,6 +6,8 @@ The idea is that as an LLM App developer, you shouldn't have to care about what 
 
 Try out the app [here!](https://chatbot-ui-alpha-six-31.vercel.app/).
 
+Upvote us on Skylight AI [here!](https://skylight-ai.vercel.app/board/06df28e9-a416-4400-8c06-107ef6a51780).
+
 ![Chatbot UI](./public/screenshot.png)
 
 
