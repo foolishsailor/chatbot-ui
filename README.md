@@ -1,10 +1,10 @@
-# Keyless Chatbot UI with WindowAI
+# Chatbot UI with window.ai
 
-Keyless Chatbot UI allows simplifies the connection between the Chatbot UI kit and any chat model (OpenAI, Cohere, GPT) by leveraging [ChatbotUI](https://github.com/mckaywrigley/chatbot-ui) Frontend and [WindowAI]()) decentralized LLM key handling. 
+Chatbot UI allows simplifies the connection between the Chatbot UI kit and any chat model (OpenAI, Cohere, GPT) by leveraging [ChatbotUI](https://github.com/mckaywrigley/chatbot-ui) Frontend and [window.ai]()) decentralized LLM key handling. 
 
 The idea is that as an LLM App developer, you shouldn't have to care about what models are being used and what are the users credentials. This is a huge friction point at the moment given that you have to either pay for the credits upfront or add a section for users to paste their own key (with the associated trust issues).
 
-See a [demo]().
+Try out the app [here!](https://chatbot-ui-alpha-six-31.vercel.app/).
 
 ![Chatbot UI](./public/screenshot.png)
 
@@ -19,26 +19,17 @@ See a [demo]().
 
 ## Updates
 
-Keyless Chatbot UI will be updated over time. Expect frequent improvements.
+Chatbot UI x window.ai will be updated over time. Expect frequent improvements.
 
-We currently supports GPT3.5-turbo. Open to contributions with integrations that support:
+We currently support GTP4 and GPT3.5-turbo. Open to contributions with integrations that support:
 - GPTNeo
 - Cohere
 - Local
-- GPT4
 
-Given that those are all the models that WindowAI supports at the moment.
+Given that those are all the models that window.ai supports at the moment.
 
-## TODO
-- WindowAI --> integrate with window.ai --> (window as any).ai.getCompletion() -->
-- Display current model from async getCurrentModel(): Promise<LLM>
-- GPT4 potential support on LLM objects (for once he has it)
-
-
-
-## Fo
 **Next up:**
-- [ ] Add support for GPT4
+- [ ] Allow model to be changed via the UI
 - [ ] Add support for GPTNeo
 - [ ] Add support for Cohere
 - [ ] Add support for Local
