@@ -1,4 +1,4 @@
-# Chatbot UI with window.ai
+# Chatbot UI x window.ai
 
 Chatbot UI allows simplifies the connection between the Chatbot UI kit and any chat model (OpenAI, Cohere, GPT) by leveraging [ChatbotUI](https://github.com/mckaywrigley/chatbot-ui) Frontend and [window.ai]()) decentralized LLM key handling. 
 
