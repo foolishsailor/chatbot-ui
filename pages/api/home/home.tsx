@@ -732,6 +732,7 @@ const Home = ({ serverSideApiKeyIsSet, defaultModelId }: HomeProps) => {
         handleClearConversations,
         handleExportData,
         handleImportConversations,
+        handleSend,
       }}
     >
       <Head>
@@ -777,21 +778,13 @@ const Home = ({ serverSideApiKeyIsSet, defaultModelId }: HomeProps) => {
               </button>
             )}
             <div className="flex flex-1">
-              <Chat
-                conversation={selectedConversation}
-                serverSideApiKeyIsSet={serverSideApiKeyIsSet}
-                onSend={handleSend}
-                onUpdateConversation={handleUpdateConversation}
-                onEditMessage={handleEditMessage}
-                stopConversationRef={stopConversationRef}
-              />
+              <Chat />
             </div>
             {showPromptbar ? (
               <div>
                 <Promptbar
                   prompts={prompts}
                   folders={folders.filter((folder) => folder.type === 'prompt')}
-                  onToggleSidebar={handleTogglePromptbar}
                   onCreatePrompt={handleCreatePrompt}
                   onUpdatePrompt={handleUpdatePrompt}
                   onDeletePrompt={handleDeletePrompt}

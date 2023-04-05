@@ -11,34 +11,31 @@ import {
   useEffect,
   useRef,
   useState,
+  useContext,
 } from 'react';
 import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
 
+import HomeContext from '@/pages/api/home/home.context';
+
 interface Props {
-  messageIsStreaming: boolean;
-  model: OpenAIModel;
-  conversationIsEmpty: boolean;
-  messages: Message[];
-  prompts: Prompt[];
-  onSend: (message: Message) => void;
-  onRegenerate: () => void;
   stopConversationRef: MutableRefObject<boolean>;
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
 }
 
-export const ChatInput: FC<Props> = ({
-  messageIsStreaming,
-  model,
-  conversationIsEmpty,
-  messages,
-  prompts,
-  onSend,
-  onRegenerate,
-  stopConversationRef,
-  textareaRef,
-}) => {
+export const ChatInput = ({ stopConversationRef, textareaRef }: Props) => {
   const { t } = useTranslation('chat');
+
+  const {
+    state: {
+      messageIsStreaming,
+      selectedConversation,
+      prompts,
+      currentMessage,
+    },
+    handleSend: handleSendContext,
+    dispatch,
+  } = useContext(HomeContext);
 
   const [content, setContent] = useState<string>();
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -56,7 +53,7 @@ export const ChatInput: FC<Props> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    const maxLength = model.maxLength;
+    const maxLength = selectedConversation?.model.maxLength;
 
     if (value.length > maxLength) {
       alert(
@@ -82,7 +79,7 @@ export const ChatInput: FC<Props> = ({
       return;
     }
 
-    onSend({ role: 'user', content });
+    handleSendContext({ role: 'user', content });
     setContent('');
 
     if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
@@ -191,6 +188,12 @@ export const ChatInput: FC<Props> = ({
     }
   };
 
+  const handleRegenerate = () => {
+    if (currentMessage) {
+      handleSendContext(currentMessage, 2);
+    }
+  };
+
   const handleSubmit = (updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
       const index = variables.indexOf(variable);
@@ -242,21 +245,23 @@ export const ChatInput: FC<Props> = ({
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
-            className="absolute left-0 right-0 mx-auto mt-2 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:top-0"
+            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
             onClick={handleStopConversation}
           >
             <IconPlayerStop size={16} /> {t('Stop Generating')}
           </button>
         )}
 
-        {!messageIsStreaming && !conversationIsEmpty && (
-          <button
-            className="absolute left-0 right-0 mx-auto mt-2 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:top-0"
-            onClick={onRegenerate}
-          >
-            <IconRepeat size={16} /> {t('Regenerate response')}
-          </button>
-        )}
+        {!messageIsStreaming &&
+          selectedConversation?.messages &&
+          selectedConversation.messages.length > 0 && (
+            <button
+              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
+              onClick={handleRegenerate}
+            >
+              <IconRepeat size={16} /> {t('Regenerate response')}
+            </button>
+          )}
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
           <textarea
@@ -286,7 +291,11 @@ export const ChatInput: FC<Props> = ({
             className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={handleSend}
           >
-            <IconSend size={18} />
+            {messageIsStreaming ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+            ) : (
+              <IconSend size={18} />
+            )}
           </button>
 
           {showPromptList && filteredPrompts.length > 0 && (

@@ -3,7 +3,7 @@ import { ActionType } from '@/hooks';
 import { HomeInitialState } from './home.state';
 import { FolderType } from '@/types/folder';
 import { SupportedExportFormats } from '@/types/export';
-import { Conversation } from '@/types/chat';
+import { Conversation, Message } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 
 export interface HomeContextProps {
@@ -24,6 +24,7 @@ export interface HomeContextProps {
   handleClearConversations: () => void;
   handleExportData: () => void;
   handleImportConversations: (data: SupportedExportFormats) => void;
+  handleSend: (message: Message, deleteCount?: number) => void;
 }
 
 const HomeContext = createContext<HomeContextProps>(undefined!);

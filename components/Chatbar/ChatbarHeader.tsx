@@ -33,7 +33,6 @@ const ChatbarHeader = () => {
           className="flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-3 rounded-md border border-white/20 p-3 text-[14px] leading-normal text-white transition-colors duration-200 hover:bg-gray-500/10"
           onClick={() => {
             handleNewConversation();
-
             dispatch({ type: 'change', field: 'searchTerm', value: '' });
           }}
         >
@@ -47,12 +46,6 @@ const ChatbarHeader = () => {
         >
           <IconFolderPlus size={18} />
         </button>
-
-        <IconArrowBarLeft
-          className="ml-1 hidden cursor-pointer p-1 text-neutral-300 hover:text-neutral-400 sm:flex"
-          size={32}
-          onClick={handleToggleSidebar}
-        />
       </div>
       {conversations.length > 1 && (
         <Search

@@ -26,7 +26,7 @@ export const ChatbarSettings = () => {
       <Import />
 
       <SidebarButton
-        text={t('Export conversations')}
+        text={t('Export data')}
         icon={<IconFileExport size={18} />}
         onClick={handleExportData}
       />

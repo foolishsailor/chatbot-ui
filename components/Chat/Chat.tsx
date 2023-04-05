@@ -26,42 +26,26 @@ import { SystemPrompt } from './SystemPrompt';
 
 import HomeContext from '@/pages/api/home/home.context';
 
-interface Props {
-  conversation: Conversation;
-  serverSideApiKeyIsSet: boolean;
-  onSend: (message: Message, deleteCount?: number) => void;
-  onUpdateConversation: (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => void;
-  onEditMessage: (message: Message, messageIndex: number) => void;
-  stopConversationRef: MutableRefObject<boolean>;
-}
-
-export const Chat: FC<Props> = ({
-  conversation,
-  serverSideApiKeyIsSet,
-  onSend,
-  onUpdateConversation,
-  onEditMessage,
-  stopConversationRef,
-}) => {
+export const Chat = memo(() => {
   const { t } = useTranslation('chat');
 
   const {
     state: {
+      currentMessage,
+      selectedConversation,
       apiKey,
-      loading,
+      serverSideApiKeyIsSet,
       modelError,
-      messageIsStreaming,
       models,
       defaultModelId,
       prompts,
+      loading,
     },
+    handleUpdateConversation,
+    dispatch,
   } = useContext(HomeContext);
 
-  const [currentMessage, setCurrentMessage] = useState<Message>();
-  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false);
@@ -105,8 +89,14 @@ export const Chat: FC<Props> = ({
   };
 
   const onClearAll = () => {
-    if (confirm(t<string>('Are you sure you want to clear all messages?'))) {
-      onUpdateConversation(conversation, { key: 'messages', value: [] });
+    if (
+      confirm(t<string>('Are you sure you want to clear all messages?')) &&
+      selectedConversation
+    ) {
+      handleUpdateConversation(selectedConversation, {
+        key: 'messages',
+        value: [],
+      });
     }
   };
 
@@ -115,15 +105,23 @@ export const Chat: FC<Props> = ({
       messagesEndRef.current?.scrollIntoView(true);
     }
   };
-
   const throttledScrollDown = throttle(scrollDown, 250);
 
   // appear scroll down button only when user scrolls up
 
   useEffect(() => {
     throttledScrollDown();
-    setCurrentMessage(conversation.messages[conversation.messages.length - 2]);
-  }, [conversation.messages, throttledScrollDown]);
+
+    if (selectedConversation?.messages)
+      dispatch({
+        type: 'change',
+        field: 'selectedConversation',
+        value:
+          selectedConversation.messages[
+            selectedConversation.messages.length - 2
+          ],
+      });
+  }, [dispatch, selectedConversation, throttledScrollDown]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -198,7 +196,7 @@ export const Chat: FC<Props> = ({
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
-            {conversation.messages.length === 0 ? (
+            {selectedConversation?.messages.length === 0 ? (
               <>
                 <div className="mx-auto flex w-[350px] flex-col space-y-10 pt-12 sm:w-[600px]">
                   <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
@@ -213,25 +211,23 @@ export const Chat: FC<Props> = ({
 
                   {models.length > 0 && (
                     <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
-                      {defaultModelId && (
-                        <ModelSelect
-                          model={conversation.model}
-                          models={models}
-                          defaultModelId={defaultModelId}
-                          onModelChange={(model) =>
-                            onUpdateConversation(conversation, {
-                              key: 'model',
-                              value: model,
-                            })
-                          }
-                        />
-                      )}
+                      <ModelSelect
+                        model={selectedConversation.model}
+                        models={models}
+                        defaultModelId={defaultModelId}
+                        onModelChange={(model) =>
+                          handleUpdateConversation(selectedConversation, {
+                            key: 'model',
+                            value: model,
+                          })
+                        }
+                      />
 
                       <SystemPrompt
-                        conversation={conversation}
+                        conversation={selectedConversation}
                         prompts={prompts}
                         onChangePrompt={(prompt) =>
-                          onUpdateConversation(conversation, {
+                          handleUpdateConversation(selectedConversation, {
                             key: 'prompt',
                             value: prompt,
                           })
@@ -244,7 +240,7 @@ export const Chat: FC<Props> = ({
             ) : (
               <>
                 <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                  {t('Model')}: {conversation.model.name}
+                  {t('Model')}: {selectedConversation?.model.name}
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
                     onClick={handleSettings}
@@ -261,24 +257,22 @@ export const Chat: FC<Props> = ({
                 {showSettings && (
                   <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
                     <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                      {defaultModelId && (
-                        <ModelSelect
-                          model={conversation.model}
-                          models={models}
-                          defaultModelId={defaultModelId}
-                          onModelChange={(model) =>
-                            onUpdateConversation(conversation, {
-                              key: 'model',
-                              value: model,
-                            })
-                          }
-                        />
-                      )}
+                      <ModelSelect
+                        model={selectedConversation?.model}
+                        models={models}
+                        defaultModelId={defaultModelId}
+                        onModelChange={(model) =>
+                          handleUpdateConversation(selectedConversation, {
+                            key: 'model',
+                            value: model,
+                          })
+                        }
+                      />
                     </div>
                   </div>
                 )}
 
-                {conversation.messages.map((message, index) => (
+                {selectedConversation?.messages.map((message, index) => (
                   <ChatMessage
                     key={index}
                     message={message}
@@ -300,27 +294,13 @@ export const Chat: FC<Props> = ({
           <ChatInput
             stopConversationRef={stopConversationRef}
             textareaRef={textareaRef}
-            messageIsStreaming={messageIsStreaming}
-            conversationIsEmpty={conversation.messages.length === 0}
-            messages={conversation.messages}
-            model={conversation.model}
-            prompts={prompts}
-            onSend={(message) => {
-              setCurrentMessage(message);
-              onSend(message);
-            }}
-            onRegenerate={() => {
-              if (currentMessage) {
-                onSend(currentMessage, 2);
-              }
-            }}
           />
         </>
       )}
       {showScrollDownButton && (
         <div className="absolute bottom-0 right-0 mb-4 mr-4 pb-20">
           <button
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
             onClick={handleScrollDown}
           >
             <IconArrowDown size={18} />
@@ -329,6 +309,5 @@ export const Chat: FC<Props> = ({
       )}
     </div>
   );
-};
-
+});
 Chat.displayName = 'Chat';

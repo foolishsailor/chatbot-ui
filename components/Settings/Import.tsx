@@ -33,7 +33,7 @@ export const Import = () => {
       />
 
       <SidebarButton
-        text={t('Import conversations')}
+        text={t('import data')}
         icon={<IconFileImport size={18} />}
         onClick={() => {
           const importFile = document.querySelector(
