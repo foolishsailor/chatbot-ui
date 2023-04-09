@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.2",
+    "@reduxjs/toolkit": "^1.9.3",
     "@tabler/icons-react": "^2.9.0",
     "eventsource-parser": "^0.1.0",
     "i18next": "^22.4.13",
@@ -26,6 +27,7 @@
     "react-markdown": "^8.0.5",
     "react-query": "^3.39.3",
     "react-syntax-highlighter": "^15.5.0",
+    "redux": "^4.2.1",
     "rehype-mathjax": "^4.0.2",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
