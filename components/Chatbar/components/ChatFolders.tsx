@@ -1,7 +1,8 @@
 import { useContext } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 
-import { Conversation } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
+import { RootState } from '@/store';
+
 import { FolderInterface } from '@/types/folder';
 
 import HomeContext from '@/pages/api/home/home.context';
@@ -15,10 +16,15 @@ interface Props {
 }
 
 export const ChatFolders = ({ searchTerm }: Props) => {
-  const {
-    state: { folders, conversations },
-    handleUpdateConversation,
-  } = useContext(HomeContext);
+  const { folders, conversations } = useSelector(
+    (state: RootState) => ({
+      folders: state.application.folders,
+      conversations: state.application.conversations,
+    }),
+    shallowEqual,
+  );
+
+  const { handleUpdateConversation } = useContext(HomeContext);
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     if (e.dataTransfer) {

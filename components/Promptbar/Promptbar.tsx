@@ -1,9 +1,13 @@
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 
 import { savePrompts } from '@/utils/app/prompts';
+
+import { RootState } from '@/store';
+import { setPrompts, setShowPromptbar } from '@/store/applicationState';
 
 import { OpenAIModels } from '@/types/openai';
 import { Prompt } from '@/types/prompt';
@@ -22,16 +26,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 const Promptbar = () => {
   const { t } = useTranslation('promptbar');
+  const dispatch = useDispatch();
+
+  const { prompts, defaultModelId, showPromptbar } = useSelector(
+    (state: RootState) => ({
+      prompts: state.application.prompts,
+      defaultModelId: state.application.defaultModelId,
+      showPromptbar: state.application.showPromptbar,
+    }),
+    shallowEqual,
+  );
 
   const promptBarContextValue = useCreateReducer<PromptbarInitialState>({
     initialState,
   });
 
-  const {
-    state: { prompts, defaultModelId, showPromptbar },
-    dispatch: homeDispatch,
-    handleCreateFolder,
-  } = useContext(HomeContext);
+  const { handleCreateFolder } = useContext(HomeContext);
 
   const {
     state: { searchTerm, filteredPrompts },
@@ -39,7 +49,8 @@ const Promptbar = () => {
   } = promptBarContextValue;
 
   const handleTogglePromptbar = () => {
-    homeDispatch({ field: 'showPromptbar', value: !showPromptbar });
+    dispatch(setShowPromptbar(!showPromptbar));
+
     localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar));
   };
 
@@ -55,8 +66,7 @@ const Promptbar = () => {
       };
 
       const updatedPrompts = [...prompts, newPrompt];
-
-      homeDispatch({ field: 'prompts', value: updatedPrompts });
+      dispatch(setPrompts(updatedPrompts));
 
       savePrompts(updatedPrompts);
     }
@@ -65,7 +75,7 @@ const Promptbar = () => {
   const handleDeletePrompt = (prompt: Prompt) => {
     const updatedPrompts = prompts.filter((p) => p.id !== prompt.id);
 
-    homeDispatch({ field: 'prompts', value: updatedPrompts });
+    dispatch(setPrompts(updatedPrompts));
     savePrompts(updatedPrompts);
   };
 
@@ -77,7 +87,7 @@ const Promptbar = () => {
 
       return p;
     });
-    homeDispatch({ field: 'prompts', value: updatedPrompts });
+    dispatch(setPrompts(updatedPrompts));
 
     savePrompts(updatedPrompts);
   };

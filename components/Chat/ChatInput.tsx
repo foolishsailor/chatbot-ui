@@ -6,23 +6,22 @@ import {
   IconSend,
 } from '@tabler/icons-react';
 import {
-  FC,
   KeyboardEvent,
   MutableRefObject,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
+
+import { RootState } from '@/store';
 
 import { Message } from '@/types/chat';
 import { Plugin } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import { PluginSelect } from './PluginSelect';
 import { PromptList } from './PromptList';
@@ -43,11 +42,14 @@ export const ChatInput = ({
 }: Props) => {
   const { t } = useTranslation('chat');
 
-  const {
-    state: { selectedConversation, messageIsStreaming, prompts },
-
-    dispatch: homeDispatch,
-  } = useContext(HomeContext);
+  const { messageIsStreaming, selectedConversation, prompts } = useSelector(
+    (state: RootState) => ({
+      messageIsStreaming: state.application.messageIsStreaming,
+      selectedConversation: state.application.selectedConversation,
+      prompts: state.application.prompts,
+    }),
+    shallowEqual,
+  );
 
   const [content, setContent] = useState<string>();
   const [isTyping, setIsTyping] = useState<boolean>(false);

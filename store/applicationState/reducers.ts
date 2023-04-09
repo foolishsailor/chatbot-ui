@@ -1,81 +1,106 @@
+import { PayloadAction } from '@reduxjs/toolkit';
+
 import { Conversation, Message } from '@/types/chat';
 import { ErrorMessage } from '@/types/error';
 import { FolderInterface } from '@/types/folder';
 import { OpenAIModel, OpenAIModelID } from '@/types/openai';
+import { PluginKey } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
-import { HomeState } from './initialState';
-
-import { PayloadAction } from '@reduxjs/toolkit';
+import { ApplicationState } from './initialState';
 
 export const reducers = {
-  setApiKey(state: HomeState, action: PayloadAction<string>) {
+  setApiKey(state: ApplicationState, action: PayloadAction<string>) {
     state.apiKey = action.payload;
   },
-  setLoading(state: HomeState, action: PayloadAction<boolean>) {
+  setPluginKeys(state: ApplicationState, action: PayloadAction<PluginKey[]>) {
+    state.pluginKeys = action.payload;
+  },
+  setLoading(state: ApplicationState, action: PayloadAction<boolean>) {
     state.loading = action.payload;
   },
-  setLightMode(state: HomeState, action: PayloadAction<'light' | 'dark'>) {
+  setLightMode(
+    state: ApplicationState,
+    action: PayloadAction<'light' | 'dark'>,
+  ) {
     state.lightMode = action.payload;
   },
-  setMessageIsStreaming(state: HomeState, action: PayloadAction<boolean>) {
+  setMessageIsStreaming(
+    state: ApplicationState,
+    action: PayloadAction<boolean>,
+  ) {
     state.messageIsStreaming = action.payload;
   },
-  setModelError(state: HomeState, action: PayloadAction<ErrorMessage | null>) {
+  setModelError(
+    state: ApplicationState,
+    action: PayloadAction<ErrorMessage | null>,
+  ) {
     state.modelError = action.payload;
   },
-  setModels(state: HomeState, action: PayloadAction<OpenAIModel[]>) {
+  setModels(state: ApplicationState, action: PayloadAction<OpenAIModel[]>) {
     state.models = action.payload;
   },
-  setFolders(state: HomeState, action: PayloadAction<FolderInterface[]>) {
+  setFolders(
+    state: ApplicationState,
+    action: PayloadAction<FolderInterface[]>,
+  ) {
     state.folders = action.payload;
   },
-  setConversations(state: HomeState, action: PayloadAction<Conversation[]>) {
+  setConversations(
+    state: ApplicationState,
+    action: PayloadAction<Conversation[]>,
+  ) {
     state.conversations = action.payload;
   },
   setSelectedConversation(
-    state: HomeState,
+    state: ApplicationState,
     action: PayloadAction<Conversation | undefined>,
   ) {
     state.selectedConversation = action.payload;
   },
   setCurrentMessage(
-    state: HomeState,
+    state: ApplicationState,
     action: PayloadAction<Message | undefined>,
   ) {
     state.currentMessage = action.payload;
   },
-  setPrompts(state: HomeState, action: PayloadAction<Prompt[]>) {
+  setPrompts(state: ApplicationState, action: PayloadAction<Prompt[]>) {
     state.prompts = action.payload;
   },
-  setShowChatbar(state: HomeState, action: PayloadAction<boolean>) {
+  setShowChatbar(state: ApplicationState, action: PayloadAction<boolean>) {
     state.showChatbar = action.payload;
   },
-  setShowPromptbar(state: HomeState, action: PayloadAction<boolean>) {
+  setShowPromptbar(state: ApplicationState, action: PayloadAction<boolean>) {
     state.showPromptbar = action.payload;
   },
   setCurrentFolder(
-    state: HomeState,
+    state: ApplicationState,
     action: PayloadAction<FolderInterface | undefined>,
   ) {
     state.currentFolder = action.payload;
   },
-  setMessageError(state: HomeState, action: PayloadAction<boolean>) {
+  setMessageError(state: ApplicationState, action: PayloadAction<boolean>) {
     state.messageError = action.payload;
   },
-  setSearchTerm(state: HomeState, action: PayloadAction<string>) {
+  setSearchTerm(state: ApplicationState, action: PayloadAction<string>) {
     state.searchTerm = action.payload;
   },
   setDefaultModelId(
-    state: HomeState,
+    state: ApplicationState,
     action: PayloadAction<OpenAIModelID | undefined>,
   ) {
     state.defaultModelId = action.payload;
   },
-  setServerSideApiKeyIsSet(state: HomeState, action: PayloadAction<boolean>) {
+  setServerSideApiKeyIsSet(
+    state: ApplicationState,
+    action: PayloadAction<boolean>,
+  ) {
     state.serverSideApiKeyIsSet = action.payload;
   },
-  setServerSidePluginKeysSet(state: HomeState, action: PayloadAction<boolean>) {
+  setServerSidePluginKeysSet(
+    state: ApplicationState,
+    action: PayloadAction<boolean>,
+  ) {
     state.serverSidePluginKeysSet = action.payload;
   },
 };

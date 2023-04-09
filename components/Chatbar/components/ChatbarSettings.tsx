@@ -1,12 +1,11 @@
 import { IconFileExport, IconMoon, IconSun } from '@tabler/icons-react';
 import { useContext } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
 
-import { SupportedExportFormats } from '@/types/export';
-import { PluginKey } from '@/types/plugin';
-
-import HomeContext from '@/pages/api/home/home.context';
+import { RootState } from '@/store';
+import { setLightMode } from '@/store/applicationState';
 
 import { Import } from '../../Settings/Import';
 import { Key } from '../../Settings/Key';
@@ -17,17 +16,24 @@ import { PluginKeys } from './PluginKeys';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
+  const dispatch = useDispatch();
 
   const {
-    state: {
-      apiKey,
-      lightMode,
-      serverSideApiKeyIsSet,
-      serverSidePluginKeysSet,
-      conversations,
-    },
-    dispatch: homeDispatch,
-  } = useContext(HomeContext);
+    apiKey,
+    lightMode,
+    serverSideApiKeyIsSet,
+    serverSidePluginKeysSet,
+    conversations,
+  } = useSelector(
+    (state: RootState) => ({
+      apiKey: state.application.apiKey,
+      lightMode: state.application.lightMode,
+      serverSideApiKeyIsSet: state.application.serverSideApiKeyIsSet,
+      serverSidePluginKeysSet: state.application.serverSidePluginKeysSet,
+      conversations: state.application.conversations,
+    }),
+    shallowEqual,
+  );
 
   const {
     handleClearConversations,
@@ -57,10 +63,7 @@ export const ChatbarSettings = () => {
           lightMode === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />
         }
         onClick={() =>
-          homeDispatch({
-            field: 'lightMode',
-            value: lightMode === 'light' ? 'dark' : 'light',
-          })
+          dispatch(setLightMode(lightMode === 'light' ? 'dark' : 'light'))
         }
       />
 

@@ -1,7 +1,10 @@
 import { IconExternalLink } from '@tabler/icons-react';
 import { useContext } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
+
+import { RootState } from '@/store';
 
 import { OpenAIModel } from '@/types/openai';
 
@@ -10,11 +13,16 @@ import HomeContext from '@/pages/api/home/home.context';
 export const ModelSelect = () => {
   const { t } = useTranslation('chat');
 
-  const {
-    state: { selectedConversation, models, defaultModelId },
-    handleUpdateConversation,
-    dispatch: homeDispatch,
-  } = useContext(HomeContext);
+  const { selectedConversation, models, defaultModelId } = useSelector(
+    (state: RootState) => ({
+      models: state.application.models,
+      selectedConversation: state.application.selectedConversation,
+      defaultModelId: state.application.defaultModelId,
+    }),
+    shallowEqual,
+  );
+
+  const { handleUpdateConversation } = useContext(HomeContext);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     selectedConversation &&

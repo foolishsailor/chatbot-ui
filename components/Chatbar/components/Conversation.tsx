@@ -13,9 +13,11 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
+
+import { RootState } from '@/store';
 
 import { Conversation } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -27,11 +29,16 @@ interface Props {
 }
 
 export const ConversationComponent = ({ conversation }: Props) => {
-  const {
-    state: { selectedConversation, messageIsStreaming },
-    handleSelectConversation,
-    handleUpdateConversation,
-  } = useContext(HomeContext);
+  const { selectedConversation, messageIsStreaming } = useSelector(
+    (state: RootState) => ({
+      selectedConversation: state.application.selectedConversation,
+      messageIsStreaming: state.application.messageIsStreaming,
+    }),
+    shallowEqual,
+  );
+
+  const { handleSelectConversation, handleUpdateConversation } =
+    useContext(HomeContext);
 
   const { handleDeleteConversation } = useContext(ChatbarContext);
 

@@ -9,8 +9,6 @@ import { FolderType } from '@/types/folder';
 import { HomeInitialState } from './home.state';
 
 export interface HomeContextProps {
-  state: HomeInitialState;
-  dispatch: Dispatch<ActionType<HomeInitialState>>;
   handleNewConversation: () => void;
   handleCreateFolder: (name: string, type: FolderType) => void;
   handleDeleteFolder: (folderId: string) => void;

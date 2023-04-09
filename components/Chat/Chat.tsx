@@ -1,6 +1,5 @@
 import { IconArrowDown, IconClearAll, IconSettings } from '@tabler/icons-react';
 import {
-  FC,
   MutableRefObject,
   memo,
   useCallback,
@@ -10,6 +9,7 @@ import {
   useState,
 } from 'react';
 import toast from 'react-hot-toast';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
 
@@ -20,6 +20,26 @@ import {
   updateConversation,
 } from '@/utils/app/conversation';
 import { throttle } from '@/utils/data/throttle';
+
+import { RootState } from '@/store';
+import {
+  setApiKey,
+  setConversations,
+  setDefaultModelId,
+  setFolders,
+  setLightMode,
+  setLoading,
+  setMessageIsStreaming,
+  setModelError,
+  setModels,
+  setPluginKeys,
+  setPrompts,
+  setSelectedConversation,
+  setServerSideApiKeyIsSet,
+  setServerSidePluginKeysSet,
+  setShowChatbar,
+  setShowPromptbar,
+} from '@/store/applicationState';
 
 import { ChatBody, Conversation } from '@/types/chat';
 import { Message } from '@/types/chat';
@@ -41,24 +61,34 @@ interface Props {
 
 export const Chat = memo(({ stopConversationRef }: Props) => {
   const { t } = useTranslation('chat');
+  const dispatch = useDispatch();
 
   const {
-    state: {
-      selectedConversation,
-      conversations,
-      models,
-      apiKey,
-      pluginKeys,
-      serverSideApiKeyIsSet,
-      messageIsStreaming,
-      modelError,
-      loading,
-      prompts,
-    },
-    handleUpdateConversation,
-    dispatch: homeDispatch,
-  } = useContext(HomeContext);
+    apiKey,
+    conversations,
+    selectedConversation,
+    prompts,
+    models,
+    pluginKeys,
+    serverSideApiKeyIsSet,
+    modelError,
+    loading,
+  } = useSelector(
+    (state: RootState) => ({
+      apiKey: state.application.apiKey,
+      conversations: state.application.conversations,
+      selectedConversation: state.application.selectedConversation,
+      prompts: state.application.prompts,
+      models: state.application.models,
+      pluginKeys: state.application.pluginKeys,
+      serverSideApiKeyIsSet: state.application.serverSideApiKeyIsSet,
+      modelError: state.application.modelError,
+      loading: state.application.loading,
+    }),
+    shallowEqual,
+  );
 
+  const { handleUpdateConversation } = useContext(HomeContext);
 
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
@@ -89,12 +119,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             messages: [...selectedConversation.messages, message],
           };
         }
-        homeDispatch({
-          field: 'selectedConversation',
-          value: updatedConversation,
-        });
-        homeDispatch({ field: 'loading', value: true });
-        homeDispatch({ field: 'messageIsStreaming', value: true });
+
+        dispatch(setSelectedConversation(updatedConversation));
+        dispatch(setLoading(true));
+        dispatch(setMessageIsStreaming(true));
+
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
@@ -126,15 +155,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           body,
         });
         if (!response.ok) {
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
+          dispatch(setLoading(false));
+          dispatch(setMessageIsStreaming(false));
+
           toast.error(response.statusText);
           return;
         }
         const data = response.body;
         if (!data) {
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
+          dispatch(setLoading(false));
+          dispatch(setMessageIsStreaming(false));
           return;
         }
         if (!plugin) {
@@ -147,7 +177,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               name: customName,
             };
           }
-          homeDispatch({ field: 'loading', value: false });
+
+          dispatch(setLoading(false));
+
           const reader = data.getReader();
           const decoder = new TextDecoder();
           let done = false;
@@ -173,10 +205,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 ...updatedConversation,
                 messages: updatedMessages,
               };
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              });
+              dispatch(setSelectedConversation(updatedConversation));
             } else {
               const updatedMessages: Message[] =
                 updatedConversation.messages.map((message, index) => {
@@ -192,10 +221,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 ...updatedConversation,
                 messages: updatedMessages,
               };
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              });
+              dispatch(setSelectedConversation(updatedConversation));
             }
           }
           saveConversation(updatedConversation);
@@ -210,9 +236,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           if (updatedConversations.length === 0) {
             updatedConversations.push(updatedConversation);
           }
-          homeDispatch({ field: 'conversations', value: updatedConversations });
+          dispatch(setConversations(updatedConversations));
+
           saveConversations(updatedConversations);
-          homeDispatch({ field: 'messageIsStreaming', value: false });
+
+          dispatch(setMessageIsStreaming(false));
         } else {
           const { answer } = await response.json();
           const updatedMessages: Message[] = [
@@ -223,10 +251,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             ...updatedConversation,
             messages: updatedMessages,
           };
-          homeDispatch({
-            field: 'selectedConversation',
-            value: updateConversation,
-          });
+          dispatch(setSelectedConversation(updatedConversation));
+
           saveConversation(updatedConversation);
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
@@ -239,10 +265,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           if (updatedConversations.length === 0) {
             updatedConversations.push(updatedConversation);
           }
-          homeDispatch({ field: 'conversations', value: updatedConversations });
+          dispatch(setConversations(updatedConversations));
+
           saveConversations(updatedConversations);
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
+          dispatch(setLoading(false));
+          dispatch(setMessageIsStreaming(false));
         }
       }
     },
@@ -307,14 +334,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
   };
   const throttledScrollDown = throttle(scrollDown, 250);
-
-  // useEffect(() => {
-  //   console.log('currentMessage', currentMessage);
-  //   if (currentMessage) {
-  //     handleSend(currentMessage);
-  //     homeDispatch({ field: 'currentMessage', value: undefined });
-  //   }
-  // }, [currentMessage]);
 
   useEffect(() => {
     throttledScrollDown();

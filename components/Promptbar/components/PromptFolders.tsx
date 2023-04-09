@@ -1,8 +1,9 @@
 import { useContext } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
+
+import { RootState } from '@/store';
 
 import { FolderInterface } from '@/types/folder';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import Folder from '@/components/Folder';
 import { PromptComponent } from '@/components/Promptbar/components/Prompt';
@@ -10,9 +11,12 @@ import { PromptComponent } from '@/components/Promptbar/components/Prompt';
 import PromptbarContext from '../PromptBar.context';
 
 export const PromptFolders = () => {
-  const {
-    state: { folders },
-  } = useContext(HomeContext);
+  const { folders } = useSelector(
+    (state: RootState) => ({
+      folders: state.application.folders,
+    }),
+    shallowEqual,
+  );
 
   const {
     state: { searchTerm, filteredPrompts },

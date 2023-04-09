@@ -1,16 +1,17 @@
+import { createSlice } from '@reduxjs/toolkit';
+
 import { initialState } from './initialState';
 import { reducers } from './reducers';
 
-import { createSlice } from '@reduxjs/toolkit';
-
 const applicationSlice = createSlice({
-  name: 'home',
+  name: 'application',
   initialState: initialState,
   reducers: reducers,
 });
 
 export const {
   setApiKey,
+  setPluginKeys,
   setLoading,
   setLightMode,
   setMessageIsStreaming,

@@ -5,7 +5,7 @@ import { OpenAIModel, OpenAIModelID } from '@/types/openai';
 import { PluginKey } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
-export interface HomeState {
+export interface ApplicationState {
   apiKey: string;
   pluginKeys: PluginKey[];
   loading: boolean;
@@ -28,7 +28,7 @@ export interface HomeState {
   serverSidePluginKeysSet: boolean;
 }
 
-export const initialState: HomeState = {
+export const initialState: ApplicationState = {
   apiKey: '',
   loading: false,
   pluginKeys: [],
