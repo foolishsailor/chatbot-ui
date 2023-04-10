@@ -1,37 +1,39 @@
 import { IconExternalLink } from '@tabler/icons-react';
-import { useContext } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
 
 import { RootState } from '@/store';
+import { updateConversation } from '@/store/conversationSlice';
 
 import { OpenAIModel } from '@/types/openai';
 
-import HomeContext from '@/pages/api/home/home.context';
-
 export const ModelSelect = () => {
   const { t } = useTranslation('chat');
+  const dipatch = useDispatch();
 
   const { selectedConversation, models, defaultModelId } = useSelector(
     (state: RootState) => ({
       models: state.application.models,
-      selectedConversation: state.application.selectedConversation,
+      selectedConversation: state.conversation.selectedConversation,
       defaultModelId: state.application.defaultModelId,
     }),
     shallowEqual,
   );
 
-  const { handleUpdateConversation } = useContext(HomeContext);
-
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     selectedConversation &&
-      handleUpdateConversation(selectedConversation, {
-        key: 'model',
-        value: models.find(
-          (model) => model.id === e.target.value,
-        ) as OpenAIModel,
-      });
+      dipatch(
+        updateConversation({
+          conversation: selectedConversation,
+          data: {
+            key: 'model',
+            value: models.find(
+              (model) => model.id === e.target.value,
+            ) as OpenAIModel,
+          },
+        }),
+      );
   };
 
   return (

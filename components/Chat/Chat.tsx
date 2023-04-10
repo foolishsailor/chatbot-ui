@@ -3,7 +3,6 @@ import {
   MutableRefObject,
   memo,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,38 +13,19 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'next-i18next';
 
 import { getEndpoint } from '@/utils/app/api';
-import {
-  saveConversation,
-  saveConversations,
-  updateConversation,
-} from '@/utils/app/conversation';
 import { throttle } from '@/utils/data/throttle';
 
 import { RootState } from '@/store';
+import { setLoading, setMessageIsStreaming } from '@/store/applicationSlice';
 import {
-  setApiKey,
   setConversations,
-  setDefaultModelId,
-  setFolders,
-  setLightMode,
-  setLoading,
-  setMessageIsStreaming,
-  setModelError,
-  setModels,
-  setPluginKeys,
-  setPrompts,
   setSelectedConversation,
-  setServerSideApiKeyIsSet,
-  setServerSidePluginKeysSet,
-  setShowChatbar,
-  setShowPromptbar,
-} from '@/store/applicationState';
+  updateConversation,
+} from '@/store/conversationSlice';
 
 import { ChatBody, Conversation } from '@/types/chat';
 import { Message } from '@/types/chat';
 import { Plugin } from '@/types/plugin';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import Spinner from '../Spinner';
 import { ChatInput } from './ChatInput';
@@ -76,8 +56,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   } = useSelector(
     (state: RootState) => ({
       apiKey: state.application.apiKey,
-      conversations: state.application.conversations,
-      selectedConversation: state.application.selectedConversation,
+      conversations: state.conversation.conversations,
+      selectedConversation: state.conversation.selectedConversation,
       prompts: state.application.prompts,
       models: state.application.models,
       pluginKeys: state.application.pluginKeys,
@@ -87,8 +67,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }),
     shallowEqual,
   );
-
-  const { handleUpdateConversation } = useContext(HomeContext);
 
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
@@ -120,7 +98,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           };
         }
 
-        dispatch(setSelectedConversation(updatedConversation));
+        dispatch(
+          setSelectedConversation({ conversation: updatedConversation }),
+        );
         dispatch(setLoading(true));
         dispatch(setMessageIsStreaming(true));
 
@@ -205,7 +185,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 ...updatedConversation,
                 messages: updatedMessages,
               };
-              dispatch(setSelectedConversation(updatedConversation));
+              dispatch(
+                setSelectedConversation({
+                  conversation: updatedConversation,
+                  save: true,
+                }),
+              );
             } else {
               const updatedMessages: Message[] =
                 updatedConversation.messages.map((message, index) => {
@@ -221,10 +206,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 ...updatedConversation,
                 messages: updatedMessages,
               };
-              dispatch(setSelectedConversation(updatedConversation));
+              dispatch(
+                setSelectedConversation({
+                  conversation: updatedConversation,
+                  save: true,
+                }),
+              );
             }
           }
-          saveConversation(updatedConversation);
+
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -236,9 +226,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           if (updatedConversations.length === 0) {
             updatedConversations.push(updatedConversation);
           }
-          dispatch(setConversations(updatedConversations));
-
-          saveConversations(updatedConversations);
+          dispatch(
+            setConversations({
+              conversations: updatedConversations,
+              save: true,
+            }),
+          );
 
           dispatch(setMessageIsStreaming(false));
         } else {
@@ -251,9 +244,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             ...updatedConversation,
             messages: updatedMessages,
           };
-          dispatch(setSelectedConversation(updatedConversation));
+          dispatch(
+            setSelectedConversation({
+              conversation: updatedConversation,
+              save: true,
+            }),
+          );
 
-          saveConversation(updatedConversation);
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -265,9 +262,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           if (updatedConversations.length === 0) {
             updatedConversations.push(updatedConversation);
           }
-          dispatch(setConversations(updatedConversations));
+          dispatch(
+            setConversations({
+              conversations: updatedConversations,
+              save: true,
+            }),
+          );
 
-          saveConversations(updatedConversations);
           dispatch(setLoading(false));
           dispatch(setMessageIsStreaming(false));
         }
@@ -321,10 +322,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       confirm(t<string>('Are you sure you want to clear all messages?')) &&
       selectedConversation
     ) {
-      handleUpdateConversation(selectedConversation, {
-        key: 'messages',
-        value: [],
-      });
+      dispatch(
+        updateConversation({
+          conversation: selectedConversation,
+          data: {
+            key: 'messages',
+            value: [],
+          },
+        }),
+      );
     }
   };
 
@@ -437,10 +443,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                         conversation={selectedConversation}
                         prompts={prompts}
                         onChangePrompt={(prompt) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'prompt',
-                            value: prompt,
-                          })
+                          dispatch(
+                            updateConversation({
+                              conversation: selectedConversation,
+                              data: {
+                                key: 'prompt',
+                                value: prompt,
+                              },
+                            }),
+                          )
                         }
                       />
                     </div>

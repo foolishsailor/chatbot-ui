@@ -15,32 +15,29 @@ import {
   cleanSelectedConversation,
 } from '@/utils/app/clean';
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const';
-import {
-  saveConversation,
-  saveConversations,
-  updateConversation,
-} from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { savePrompts } from '@/utils/app/prompts';
 
 import { RootState } from '@/store';
 import {
   setApiKey,
-  setConversations,
   setDefaultModelId,
-  setFolders,
   setLightMode,
   setLoading,
   setModelError,
   setModels,
   setPluginKeys,
   setPrompts,
-  setSelectedConversation,
   setServerSideApiKeyIsSet,
   setServerSidePluginKeysSet,
   setShowChatbar,
   setShowPromptbar,
-} from '@/store/applicationState';
+} from '@/store/applicationSlice';
+import {
+  setConversations,
+  setFolders,
+  setSelectedConversation,
+} from '@/store/conversationSlice';
 
 import { Conversation } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
@@ -85,9 +82,9 @@ const Home = ({
     (state: RootState) => ({
       apiKey: state.application.apiKey,
       lightMode: state.application.lightMode,
-      folders: state.application.folders,
-      conversations: state.application.conversations,
-      selectedConversation: state.application.selectedConversation,
+      folders: state.conversation.folders,
+      conversations: state.conversation.conversations,
+      selectedConversation: state.conversation.selectedConversation,
       prompts: state.application.prompts,
     }),
     shallowEqual,
@@ -95,7 +92,7 @@ const Home = ({
 
   const stopConversationRef = useRef<boolean>(false);
 
-  const { data, error, refetch } = useQuery(
+  const { data, error } = useQuery(
     ['GetModels', apiKey, serverSideApiKeyIsSet],
     ({ signal }) => {
       if (!apiKey && !serverSideApiKeyIsSet) return null;
@@ -117,16 +114,6 @@ const Home = ({
   useEffect(() => {
     dispatch(setModelError(getModelsError(error)));
   }, [dispatch, error, getModelsError]);
-
-  // FETCH MODELS ----------------------------------------------
-
-  const handleSelectConversation = (conversation: Conversation) => {
-    dispatch(setSelectedConversation(conversation));
-
-    saveConversation(conversation);
-  };
-
-  // FOLDER OPERATIONS  --------------------------------------------
 
   const handleCreateFolder = (name: string, type: FolderType) => {
     const newFolder: FolderInterface = {
@@ -160,8 +147,9 @@ const Home = ({
       return c;
     });
 
-    dispatch(setConversations(updatedConversations));
-    saveConversations(updatedConversations);
+    dispatch(
+      setConversations({ conversations: updatedConversations, save: true }),
+    );
 
     const updatedPrompts: Prompt[] = prompts.map((p) => {
       if (p.folderId === folderId) {
@@ -216,34 +204,15 @@ const Home = ({
 
     const updatedConversations = [...conversations, newConversation];
 
-    dispatch(setSelectedConversation(newConversation));
-    dispatch(setConversations(updatedConversations));
-
-    saveConversation(newConversation);
-    saveConversations(updatedConversations);
+    dispatch(
+      setSelectedConversation({ conversation: newConversation, save: true }),
+    );
+    dispatch(
+      setConversations({ conversations: updatedConversations, save: true }),
+    );
 
     dispatch(setLoading(false));
   };
-
-  const handleUpdateConversation = (
-    conversation: Conversation,
-    data: KeyValuePair,
-  ) => {
-    const updatedConversation = {
-      ...conversation,
-      [data.key]: data.value,
-    };
-
-    const { single, all } = updateConversation(
-      updatedConversation,
-      conversations,
-    );
-
-    dispatch(setSelectedConversation(single));
-    dispatch(setConversations(all));
-  };
-
-  // EFFECTS  --------------------------------------------
 
   useEffect(() => {
     if (window.innerWidth < 640) {
@@ -320,7 +289,12 @@ const Home = ({
         parsedConversationHistory,
       );
 
-      dispatch(setConversations(cleanedConversationHistory));
+      dispatch(
+        setConversations({
+          conversations: cleanedConversationHistory,
+          save: true,
+        }),
+      );
     }
 
     const selectedConversation = localStorage.getItem('selectedConversation');
@@ -330,16 +304,20 @@ const Home = ({
       const cleanedSelectedConversation = cleanSelectedConversation(
         parsedSelectedConversation,
       );
-      dispatch(setSelectedConversation(cleanedSelectedConversation));
+      dispatch(
+        setSelectedConversation({ conversation: cleanedSelectedConversation }),
+      );
     } else {
       dispatch(
         setSelectedConversation({
-          id: uuidv4(),
-          name: 'New conversation',
-          messages: [],
-          model: OpenAIModels[defaultModelId],
-          prompt: DEFAULT_SYSTEM_PROMPT,
-          folderId: null,
+          conversation: {
+            id: uuidv4(),
+            name: 'New conversation',
+            messages: [],
+            model: OpenAIModels[defaultModelId],
+            prompt: DEFAULT_SYSTEM_PROMPT,
+            folderId: null,
+          },
         }),
       );
     }
@@ -357,8 +335,6 @@ const Home = ({
         handleCreateFolder,
         handleDeleteFolder,
         handleUpdateFolder,
-        handleSelectConversation,
-        handleUpdateConversation,
       }}
     >
       <Head>

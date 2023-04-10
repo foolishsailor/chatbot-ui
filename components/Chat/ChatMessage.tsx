@@ -17,7 +17,7 @@ import {
   setConversations,
   setCurrentMessage,
   setSelectedConversation,
-} from '@/store/applicationState';
+} from '@/store/conversationSlice';
 
 import { Message } from '@/types/chat';
 
@@ -39,8 +39,8 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
 
   const { conversations, selectedConversation } = useSelector(
     (state: RootState) => ({
-      conversations: state.application.conversations,
-      selectedConversation: state.application.selectedConversation,
+      conversations: state.conversation.conversations,
+      selectedConversation: state.conversation.selectedConversation,
     }),
     shallowEqual,
   );
@@ -85,8 +85,10 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
           conversations,
         );
 
-        dispatch(setSelectedConversation(single));
-        dispatch(setConversations(all));
+        console.log('edit message', single, all);
+
+        dispatch(setSelectedConversation({ conversation: single }));
+        dispatch(setConversations({ conversations: all }));
         dispatch(setCurrentMessage({ ...message, content: messageContent }));
       }
     }

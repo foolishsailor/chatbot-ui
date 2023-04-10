@@ -1,13 +1,11 @@
 import { PayloadAction } from '@reduxjs/toolkit';
 
-import { Conversation, Message } from '@/types/chat';
 import { ErrorMessage } from '@/types/error';
-import { FolderInterface } from '@/types/folder';
 import { OpenAIModel, OpenAIModelID } from '@/types/openai';
 import { PluginKey } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
-import { ApplicationState } from './initialState';
+import { ApplicationState } from './state';
 
 export const reducers = {
   setApiKey(state: ApplicationState, action: PayloadAction<string>) {
@@ -40,30 +38,6 @@ export const reducers = {
   setModels(state: ApplicationState, action: PayloadAction<OpenAIModel[]>) {
     state.models = action.payload;
   },
-  setFolders(
-    state: ApplicationState,
-    action: PayloadAction<FolderInterface[]>,
-  ) {
-    state.folders = action.payload;
-  },
-  setConversations(
-    state: ApplicationState,
-    action: PayloadAction<Conversation[]>,
-  ) {
-    state.conversations = action.payload;
-  },
-  setSelectedConversation(
-    state: ApplicationState,
-    action: PayloadAction<Conversation | undefined>,
-  ) {
-    state.selectedConversation = action.payload;
-  },
-  setCurrentMessage(
-    state: ApplicationState,
-    action: PayloadAction<Message | undefined>,
-  ) {
-    state.currentMessage = action.payload;
-  },
   setPrompts(state: ApplicationState, action: PayloadAction<Prompt[]>) {
     state.prompts = action.payload;
   },
@@ -72,12 +46,6 @@ export const reducers = {
   },
   setShowPromptbar(state: ApplicationState, action: PayloadAction<boolean>) {
     state.showPromptbar = action.payload;
-  },
-  setCurrentFolder(
-    state: ApplicationState,
-    action: PayloadAction<FolderInterface | undefined>,
-  ) {
-    state.currentFolder = action.payload;
   },
   setMessageError(state: ApplicationState, action: PayloadAction<boolean>) {
     state.messageError = action.payload;

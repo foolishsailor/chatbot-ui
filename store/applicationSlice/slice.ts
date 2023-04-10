@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { initialState } from './initialState';
 import { reducers } from './reducers';
+import { initialState } from './state';
 
-const applicationSlice = createSlice({
+const slice = createSlice({
   name: 'application',
   initialState: initialState,
   reducers: reducers,
@@ -17,21 +17,16 @@ export const {
   setMessageIsStreaming,
   setModelError,
   setModels,
-  setFolders,
-  setConversations,
-  setSelectedConversation,
-  setCurrentMessage,
   setPrompts,
   setShowChatbar,
   setShowPromptbar,
-  setCurrentFolder,
   setMessageError,
   setSearchTerm,
   setDefaultModelId,
   setServerSideApiKeyIsSet,
   setServerSidePluginKeysSet,
-} = applicationSlice.actions;
+} = slice.actions;
 
-const applicationReducer = applicationSlice.reducer;
+const applicationSlice = slice.reducer;
 
-export default applicationReducer;
+export default applicationSlice;

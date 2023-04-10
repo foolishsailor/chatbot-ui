@@ -1,10 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import applicationReducer from './applicationState/applicationState';
+import applicationSlice from './applicationSlice/slice';
+import conversationSlice from './conversationSlice/slice';
+import promptSlice from './promptSlice/slice';
 
 const store = configureStore({
   reducer: {
-    application: applicationReducer,
+    application: applicationSlice,
+    conversation: conversationSlice,
+    prompt: promptSlice,
   },
 });
 

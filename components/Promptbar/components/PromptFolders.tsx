@@ -13,7 +13,7 @@ import PromptbarContext from '../PromptBar.context';
 export const PromptFolders = () => {
   const { folders } = useSelector(
     (state: RootState) => ({
-      folders: state.application.folders,
+      folders: state.conversation.folders,
     }),
     shallowEqual,
   );

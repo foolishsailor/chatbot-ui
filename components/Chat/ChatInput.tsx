@@ -45,7 +45,7 @@ export const ChatInput = ({
   const { messageIsStreaming, selectedConversation, prompts } = useSelector(
     (state: RootState) => ({
       messageIsStreaming: state.application.messageIsStreaming,
-      selectedConversation: state.application.selectedConversation,
+      selectedConversation: state.conversation.selectedConversation,
       prompts: state.application.prompts,
     }),
     shallowEqual,

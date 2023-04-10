@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
@@ -6,21 +6,22 @@ import { useTranslation } from 'next-i18next';
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const';
-import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
 
 import { RootState } from '@/store';
 import {
   setApiKey,
-  setConversations,
-  setFolders,
   setPluginKeys,
   setPrompts,
-  setSearchTerm,
-  setSelectedConversation,
   setShowChatbar,
-} from '@/store/applicationState';
+} from '@/store/applicationSlice';
+import {
+  setConversations,
+  setFolders,
+  setSelectedConversation,
+  updateConversation,
+} from '@/store/conversationSlice';
 
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
@@ -47,10 +48,10 @@ export const Chatbar = () => {
   const { conversations, showChatbar, defaultModelId, folders, pluginKeys } =
     useSelector(
       (state: RootState) => ({
-        conversations: state.application.conversations,
+        conversations: state.conversation.conversations,
         showChatbar: state.application.showChatbar,
         defaultModelId: state.application.defaultModelId,
-        folders: state.application.folders,
+        folders: state.conversation.folders,
         pluginKeys: state.application.pluginKeys,
       }),
       shallowEqual,
@@ -60,11 +61,7 @@ export const Chatbar = () => {
     initialState,
   });
 
-  const {
-    handleCreateFolder,
-    handleNewConversation,
-    handleUpdateConversation,
-  } = useContext(HomeContext);
+  const { handleCreateFolder, handleNewConversation } = useContext(HomeContext);
 
   const {
     state: { searchTerm, filteredConversations },
@@ -126,8 +123,10 @@ export const Chatbar = () => {
 
   const handleImportConversations = (data: SupportedExportFormats) => {
     const { history, folders, prompts }: LatestExportFormat = importData(data);
-    dispatch(setConversations(history));
-    dispatch(setSelectedConversation(history[history.length - 1]));
+    dispatch(setConversations({ conversations: history }));
+    dispatch(
+      setSelectedConversation({ conversation: history[history.length - 1] }),
+    );
     dispatch(setFolders(folders));
     dispatch(setPrompts(prompts));
   };
@@ -136,16 +135,18 @@ export const Chatbar = () => {
     defaultModelId &&
       dispatch(
         setSelectedConversation({
-          id: uuidv4(),
-          name: 'New conversation',
-          messages: [],
-          model: OpenAIModels[defaultModelId],
-          prompt: DEFAULT_SYSTEM_PROMPT,
-          folderId: null,
+          conversation: {
+            id: uuidv4(),
+            name: 'New conversation',
+            messages: [],
+            model: OpenAIModels[defaultModelId],
+            prompt: DEFAULT_SYSTEM_PROMPT,
+            folderId: null,
+          },
         }),
       );
 
-    dispatch(setConversations([]));
+    dispatch(setConversations({ conversations: [] }));
 
     localStorage.removeItem('conversationHistory');
     localStorage.removeItem('selectedConversation');
@@ -162,29 +163,31 @@ export const Chatbar = () => {
       (c) => c.id !== conversation.id,
     );
 
-    dispatch(setConversations(updatedConversations));
+    dispatch(
+      setConversations({ conversations: updatedConversations, save: true }),
+    );
 
     chatDispatch({ field: 'searchTerm', value: '' });
-    saveConversations(updatedConversations);
 
     if (updatedConversations.length > 0) {
       dispatch(
-        setSelectedConversation(
-          updatedConversations[updatedConversations.length - 1],
-        ),
+        setSelectedConversation({
+          conversation: updatedConversations[updatedConversations.length - 1],
+          save: true,
+        }),
       );
-
-      saveConversation(updatedConversations[updatedConversations.length - 1]);
     } else {
       defaultModelId &&
         dispatch(
           setSelectedConversation({
-            id: uuidv4(),
-            name: 'New conversation',
-            messages: [],
-            model: OpenAIModels[defaultModelId],
-            prompt: DEFAULT_SYSTEM_PROMPT,
-            folderId: null,
+            conversation: {
+              id: uuidv4(),
+              name: 'New conversation',
+              messages: [],
+              model: OpenAIModels[defaultModelId],
+              prompt: DEFAULT_SYSTEM_PROMPT,
+              folderId: null,
+            },
           }),
         );
 
@@ -201,7 +204,13 @@ export const Chatbar = () => {
   const handleDrop = (e: any) => {
     if (e.dataTransfer) {
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
-      handleUpdateConversation(conversation, { key: 'folderId', value: 0 });
+
+      dispatch(
+        updateConversation({
+          conversation,
+          data: { key: 'folderId', value: 0 },
+        }),
+      );
       chatDispatch({ field: 'searchTerm', value: '' });
       e.target.style.background = 'none';
     }

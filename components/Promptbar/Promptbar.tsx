@@ -7,7 +7,7 @@ import { useCreateReducer } from '@/hooks/useCreateReducer';
 import { savePrompts } from '@/utils/app/prompts';
 
 import { RootState } from '@/store';
-import { setPrompts, setShowPromptbar } from '@/store/applicationState';
+import { setPrompts, setShowPromptbar } from '@/store/applicationSlice';
 
 import { OpenAIModels } from '@/types/openai';
 import { Prompt } from '@/types/prompt';
@@ -15,7 +15,6 @@ import { Prompt } from '@/types/prompt';
 import HomeContext from '@/pages/api/home/home.context';
 
 import { PromptFolders } from './components/PromptFolders';
-import { PromptbarSettings } from './components/PromptbarSettings';
 import { Prompts } from './components/Prompts';
 
 import Sidebar from '../Sidebar';

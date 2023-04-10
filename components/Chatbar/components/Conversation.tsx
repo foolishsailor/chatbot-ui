@@ -13,13 +13,15 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { RootState } from '@/store';
+import {
+  setSelectedConversation,
+  updateConversation,
+} from '@/store/conversationSlice';
 
 import { Conversation } from '@/types/chat';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
 import ChatbarContext from '@/components/Chatbar/Chatbar.context';
@@ -29,16 +31,14 @@ interface Props {
 }
 
 export const ConversationComponent = ({ conversation }: Props) => {
+  const dispatch = useDispatch();
   const { selectedConversation, messageIsStreaming } = useSelector(
     (state: RootState) => ({
-      selectedConversation: state.application.selectedConversation,
+      selectedConversation: state.conversation.selectedConversation,
       messageIsStreaming: state.application.messageIsStreaming,
     }),
     shallowEqual,
   );
-
-  const { handleSelectConversation, handleUpdateConversation } =
-    useContext(HomeContext);
 
   const { handleDeleteConversation } = useContext(ChatbarContext);
 
@@ -64,10 +64,16 @@ export const ConversationComponent = ({ conversation }: Props) => {
 
   const handleRename = (conversation: Conversation) => {
     if (renameValue.trim().length > 0) {
-      handleUpdateConversation(conversation, {
-        key: 'name',
-        value: renameValue,
-      });
+      dispatch(
+        updateConversation({
+          conversation,
+          data: {
+            key: 'name',
+            value: renameValue,
+          },
+        }),
+      );
+
       setRenameValue('');
       setIsRenaming(false);
     }
@@ -131,7 +137,9 @@ export const ConversationComponent = ({ conversation }: Props) => {
               ? 'bg-[#343541]/90'
               : ''
           }`}
-          onClick={() => handleSelectConversation(conversation)}
+          onClick={() =>
+            dispatch(setSelectedConversation({ conversation, save: true }))
+          }
           disabled={messageIsStreaming}
           draggable="true"
           onDragStart={(e) => handleDragStart(e, conversation)}

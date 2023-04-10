@@ -5,7 +5,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'next-i18next';
 
 import { RootState } from '@/store';
-import { setLightMode } from '@/store/applicationState';
+import { setLightMode } from '@/store/applicationSlice';
 
 import { Import } from '../../Settings/Import';
 import { Key } from '../../Settings/Key';
@@ -30,7 +30,7 @@ export const ChatbarSettings = () => {
       lightMode: state.application.lightMode,
       serverSideApiKeyIsSet: state.application.serverSideApiKeyIsSet,
       serverSidePluginKeysSet: state.application.serverSidePluginKeysSet,
-      conversations: state.application.conversations,
+      conversations: state.conversation.conversations,
     }),
     shallowEqual,
   );

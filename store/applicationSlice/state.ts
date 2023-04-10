@@ -13,14 +13,9 @@ export interface ApplicationState {
   messageIsStreaming: boolean;
   modelError: ErrorMessage | null;
   models: OpenAIModel[];
-  folders: FolderInterface[];
-  conversations: Conversation[];
-  selectedConversation: Conversation | undefined;
-  currentMessage: Message | undefined;
   prompts: Prompt[];
   showChatbar: boolean;
   showPromptbar: boolean;
-  currentFolder: FolderInterface | undefined;
   messageError: boolean;
   searchTerm: string;
   defaultModelId: OpenAIModelID | undefined;
@@ -36,14 +31,9 @@ export const initialState: ApplicationState = {
   messageIsStreaming: false,
   modelError: null,
   models: [],
-  folders: [],
-  conversations: [],
-  selectedConversation: undefined,
-  currentMessage: undefined,
   prompts: [],
   showPromptbar: true,
   showChatbar: true,
-  currentFolder: undefined,
   messageError: false,
   searchTerm: '',
   defaultModelId: undefined,
