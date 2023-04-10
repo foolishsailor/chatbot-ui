@@ -77,7 +77,10 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
 
         const updatedConversation = {
           ...selectedConversation,
-          messages: updatedMessages,
+          messages: [
+            ...updatedMessages,
+            { ...message, content: messageContent },
+          ],
         };
 
         const { single, all } = updateConversation(
