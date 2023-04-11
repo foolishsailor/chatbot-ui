@@ -40,9 +40,11 @@ export const useFetch = () => {
         const headers = response.headers;
 
         const result =
-          contentType &&
-          (contentType?.indexOf('application/json') !== -1 ||
-            contentType?.indexOf('text/plain') !== -1)
+          response.body && typeof response.body.getReader === 'function'
+            ? response.body
+            : contentType &&
+              (contentType?.indexOf('application/json') !== -1 ||
+                contentType?.indexOf('text/plain') !== -1)
             ? response.json()
             : contentDisposition?.indexOf('attachment') !== -1
             ? response.blob()

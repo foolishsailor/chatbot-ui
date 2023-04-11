@@ -67,7 +67,6 @@ const Home = ({
       folders,
       conversations,
       selectedConversation,
-
       prompts,
     },
     dispatch,
