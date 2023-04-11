@@ -1,10 +1,11 @@
 import { IconKey } from '@tabler/icons-react';
 import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { shallowEqual, useSelector } from 'react-redux';
+
+import { RootState } from '@/store';
 
 import { PluginID, PluginKey } from '@/types/plugin';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import { SidebarButton } from '@/components/Sidebar/SidebarButton';
 
@@ -13,9 +14,12 @@ import ChatbarContext from '../Chatbar.context';
 export const PluginKeys = () => {
   const { t } = useTranslation('sidebar');
 
-  const {
-    state: { pluginKeys },
-  } = useContext(HomeContext);
+  const { pluginKeys } = useSelector(
+    (state: RootState) => ({
+      pluginKeys: state.application.pluginKeys,
+    }),
+    shallowEqual,
+  );
 
   const { handlePluginKeyChange, handleClearPluginKey } =
     useContext(ChatbarContext);

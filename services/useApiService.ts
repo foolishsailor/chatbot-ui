@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import { useFetch } from '@/hooks/useFetch';
 
+import { OpenAIModel } from '@/types/openai';
+
 export interface GetModelsRequestProps {
   key: string;
 }
@@ -27,7 +29,7 @@ const useApiService = () => {
 
   const getModels = useCallback(
     (params: GetModelsRequestProps, signal?: AbortSignal) => {
-      return fetchService.post<GetModelsRequestProps>(`/api/models`, {
+      return fetchService.post<OpenAIModel[]>(`/api/models`, {
         body: { key: params.key },
         headers: {
           'Content-Type': 'application/json',

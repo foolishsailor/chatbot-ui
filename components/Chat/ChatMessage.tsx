@@ -6,14 +6,20 @@ import {
   IconUser,
 } from '@tabler/icons-react';
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'next-i18next';
 
 import { updateConversation } from '@/utils/app/conversation';
 
-import { Message } from '@/types/chat';
+import { RootState } from '@/store';
+import {
+  setConversations,
+  setCurrentMessage,
+  setSelectedConversation,
+} from '@/store/conversationSlice';
 
-import HomeContext from '@/pages/api/home/home.context';
+import { Message } from '@/types/chat';
 
 import { CodeBlock } from '../Markdown/CodeBlock';
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown';
@@ -29,11 +35,15 @@ interface Props {
 
 export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
   const { t } = useTranslation('chat');
+  const dispatch = useDispatch();
 
-  const {
-    state: { selectedConversation, conversations },
-    dispatch: homeDispatch,
-  } = useContext(HomeContext);
+  const { conversations, selectedConversation } = useSelector(
+    (state: RootState) => ({
+      conversations: state.conversation.conversations,
+      selectedConversation: state.conversation.selectedConversation,
+    }),
+    shallowEqual,
+  );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -67,7 +77,10 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
 
         const updatedConversation = {
           ...selectedConversation,
-          messages: updatedMessages,
+          messages: [
+            ...updatedMessages,
+            { ...message, content: messageContent },
+          ],
         };
 
         const { single, all } = updateConversation(
@@ -75,12 +88,11 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex }) => {
           conversations,
         );
 
-        homeDispatch({ field: 'selectedConversation', value: single });
-        homeDispatch({ field: 'conversations', value: all });
-        homeDispatch({
-          field: 'currentMessage',
-          value: { ...message, content: messageContent },
-        });
+        console.log('edit message', single, all);
+
+        dispatch(setSelectedConversation({ conversation: single }));
+        dispatch(setConversations({ conversations: all }));
+        dispatch(setCurrentMessage({ ...message, content: messageContent }));
       }
     }
     setIsEditing(false);

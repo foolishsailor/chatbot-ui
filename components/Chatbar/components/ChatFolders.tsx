@@ -1,10 +1,9 @@
-import { useContext } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
-import { Conversation } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
+import { RootState } from '@/store';
+import { updateConversation } from '@/store/conversationSlice';
+
 import { FolderInterface } from '@/types/folder';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import Folder from '@/components/Folder';
 
@@ -15,18 +14,29 @@ interface Props {
 }
 
 export const ChatFolders = ({ searchTerm }: Props) => {
-  const {
-    state: { folders, conversations },
-    handleUpdateConversation,
-  } = useContext(HomeContext);
+  const dispatch = useDispatch();
+
+  const { folders, conversations } = useSelector(
+    (state: RootState) => ({
+      folders: state.conversation.folders,
+      conversations: state.conversation.conversations,
+    }),
+    shallowEqual,
+  );
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     if (e.dataTransfer) {
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
-      handleUpdateConversation(conversation, {
-        key: 'folderId',
-        value: folder.id,
-      });
+
+      dispatch(
+        updateConversation({
+          conversation,
+          data: {
+            key: 'folderId',
+            value: folder.id,
+          },
+        }),
+      );
     }
   };
 
