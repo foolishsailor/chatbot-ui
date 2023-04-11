@@ -59,10 +59,9 @@ export const reducers = {
       state.conversations,
     );
 
-    console.log('updated messages', single, all);
     state.selectedConversation = single;
     state.conversations = all;
-    // saveConversation(single);
+    saveConversation(single);
     saveConversations(all);
   },
 };
